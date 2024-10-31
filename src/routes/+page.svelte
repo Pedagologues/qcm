@@ -9,10 +9,12 @@
 
 	import { Tab, TabGroup } from '@skeletonlabs/skeleton';
 
+	import { getModalStore, Modal, type ModalSettings } from '@skeletonlabs/skeleton';
+
 	import QcmEditor from '$lib/components/QCMEditor.svelte';
 	import { derived_writable } from '$lib/store';
 	import { onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
+	import { type Writable } from 'svelte/store';
 	import { local_documents, type IDocument } from '../store';
 
 	let selected: number = 0;
@@ -44,11 +46,42 @@
 				}
 			)
 		: undefined;
+
+	const modalStore = getModalStore();
+
+	const modal_gen = (): ModalSettings => {
+		return {
+			type: 'prompt',
+			title: 'Enter Title',
+			body: 'Provide the file title in the prompt below.',
+			value: $current_document?.name,
+			valueAttr: { type: 'text', minlength: 3, maxlength: 16, required: true },
+			// Returns the updated response value
+			response: (r: any) => {
+				console.log(r);
+				if (r === false) return;
+
+				if (current_document) {
+					const v = $current_document;
+					$current_document = {
+						...v,
+						name: r,
+						updated: new Date()
+					} as IDocument;
+				}
+			}
+		};
+	};
 </script>
 
+<Modal />
 <TabGroup>
 	{#each $local_documents as doc}
-		<Tab bind:group={selected} name={doc.name} value={doc.local_id}
+		<Tab
+			bind:group={selected}
+			name={doc.name}
+			value={doc.local_id}
+			on:click={(e) => modalStore.trigger(modal_gen())}
 			>{doc.name}
 			{#if !doc.sent || doc.sent.getTime() < doc.updated.getTime()}
 				<strong>*</strong>

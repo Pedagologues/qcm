@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { initializeStores } from '@skeletonlabs/skeleton';
 	import '../app.css';
 	let { children } = $props();
+	initializeStores();
 </script>
 
 <div class=" flex flex-col">
