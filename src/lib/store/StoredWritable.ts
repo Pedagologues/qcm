@@ -15,7 +15,6 @@ export function stored_writable<T>(
 
 	return {
 		set: (v) => {
-			console.log('Change');
 			if (isBrowser) {
 				localStorage[key] = JSON.stringify(v);
 				if (server_update) server_update(v);
@@ -24,7 +23,6 @@ export function stored_writable<T>(
 			store.set(v);
 		},
 		update: (updater) => {
-			console.log('UPDATE');
 			store.update((v) => {
 				const new_v = updater(v);
 				if (isBrowser) {

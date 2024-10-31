@@ -1,9 +1,4 @@
 <script lang="ts">
-	import { code } from '@cartamd/plugin-code';
-	import { math } from '@cartamd/plugin-math';
-	import { slash } from '@cartamd/plugin-slash';
-	import { tikz } from '@cartamd/plugin-tikz';
-	import { Carta, MarkdownEditor } from 'carta-md';
 	// Component default theme
 	import 'carta-md/default.css';
 	// Extentsions themes
@@ -12,55 +7,61 @@
 	import '@cartamd/plugin-slash/default.css';
 	import 'katex/dist/katex.css';
 
-	import { qcm } from '$lib/plugin-qcm';
+	import { Tab, TabGroup } from '@skeletonlabs/skeleton';
+
+	import QcmEditor from '$lib/components/QCMEditor.svelte';
 	import { derived_writable } from '$lib/store';
-	import DOMPurify from 'isomorphic-dompurify';
 	import { onMount } from 'svelte';
-	import { writable, type Writable } from 'svelte/store';
+	import type { Writable } from 'svelte/store';
 	import { local_documents, type IDocument } from '../store';
 
-	let current_document: Writable<IDocument> = writable({
-		name: 'New',
-		local_id: 0,
-		data: '',
-		updated: new Date(),
-		created: new Date()
-	});
+	let selected: number = 0;
 
 	onMount(() => {
 		if ($local_documents.length == 0) {
-			$local_documents.push($current_document);
+			$local_documents = $local_documents.concat({
+				name: 'New',
+				local_id: 0,
+				data: '',
+				updated: new Date(),
+				created: new Date()
+			});
 		}
-		const selected = $local_documents
-			.toSorted((x, y) => x.updated.getTime() - y.updated.getTime())
-			.find(() => true) as IDocument;
 
-		current_document = derived_writable(
-			local_documents,
-			() => $local_documents.find((v) => v.local_id == selected.local_id) as IDocument,
-			(v) => {
-				$local_documents = $local_documents.map((o) => (o.local_id == selected.local_id ? v : o));
-			}
-		);
+		selected =
+			$local_documents
+				.toSorted((v1, v2) => v1.updated.getTime() - v2.updated.getTime())
+				.find(() => true)?.local_id || 0;
 	});
 
-	let data = derived_writable(
-		current_document,
-		() => $current_document.data,
-		(v) => ($current_document.data = v)
-	);
-
-	// let data = writable('');
-
-	const carta = new Carta({
-		sanitizer: DOMPurify.sanitize,
-		extensions: [math(), code(), slash(), tikz(), qcm()]
-	});
+	let current_document: Writable<IDocument> | undefined;
+	$: current_document = $local_documents.find((v) => v.local_id == selected)
+		? derived_writable(
+				local_documents,
+				() => $local_documents.find((v) => v.local_id == selected) as IDocument,
+				(v) => {
+					$local_documents = $local_documents.map((o) => (o.local_id == selected ? v : o));
+				}
+			)
+		: undefined;
 </script>
 
-{#if current_document != null && $current_document != null}
-	<MarkdownEditor {carta} mode={'auto'} bind:value={$data} />
-{/if}
+<TabGroup>
+	{#each $local_documents as doc}
+		<Tab bind:group={selected} name={doc.name} value={doc.local_id}
+			>{doc.name}
+			{#if !doc.sent || doc.sent.getTime() < doc.updated.getTime()}
+				<strong>*</strong>
+			{/if}</Tab
+		>
+	{/each}
+	<!-- Tab Panels --->
+	<svelte:fragment slot="panel">
+		{#if $current_document}
+			<QcmEditor bind:current_document={current_document as Writable<IDocument>} />
+		{/if}
+	</svelte:fragment>
+</TabGroup>
 
 <style>
 	/* Or in global stylesheet */
