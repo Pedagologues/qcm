@@ -14,16 +14,16 @@
 
 	import { qcm } from '$lib/plugin-qcm';
 	import { derived_writable } from '$lib/store';
+	import type ILocalDocument from '$lib/types/ILocalDocument';
 	import DOMPurify from 'isomorphic-dompurify';
 	import { type Writable } from 'svelte/store';
-	import { type IDocument } from '../../store';
 
-	export let current_document: Writable<IDocument>;
+	export let current_document: Writable<ILocalDocument>;
 
 	let data = derived_writable(
 		current_document,
 		() => $current_document.data,
-		(v) => ($current_document.data = v)
+		(v) => ($current_document = { ...$current_document, data: v, updated: new Date() })
 	);
 
 	const carta = new Carta({
