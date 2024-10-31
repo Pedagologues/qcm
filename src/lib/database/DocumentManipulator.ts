@@ -48,19 +48,13 @@ export async function toDatabase(db: Database, document: ILocalDocument): Promis
 
 export async function fromDatabase(db: Database, id: number): Promise<IDocument | null> {
 	const query = `SELECT * FROM documents WHERE id = ?`;
-	const row: any = db.get(query, [id]);
 
-	if (!row) return null;
-
-	return {
-		id: row.id,
-		name: row.name,
-		data: row.data,
-		created: new Date(row.created),
-		updated: new Date(row.updated),
-		view: row.view || undefined,
-		edit: row.edit || undefined
-	};
+	return new Promise((resolve, reject) => {
+		db.get(query, [id], (err, rows) => {
+			if (err) reject(err);
+			resolve(ensureDocumentType(rows));
+		});
+	});
 }
 
 export function ensureDocumentType(v: any): ILocalDocument {

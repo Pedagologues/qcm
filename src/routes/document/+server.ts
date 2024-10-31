@@ -6,11 +6,30 @@ import { getConnection } from '../../hooks.server.js';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	const v: ILocalDocument = ensureDocumentType(await request.json());
+	if (v.id && v.id != -1) {
+		const stored = await fromDatabase(getConnection(), v.id);
+
+		if (stored?.edit != v.edit) return json({}, { status: 401, statusText: 'Wrong edit token' });
+	}
+
+	if (!v.edit) {
+		v.edit = new Date().getTime().toString(16) + Math.random().toString().substring(2, 10);
+	}
+
+	if (!v.view) {
+		v.view = new Date().getTime().toString(16) + Math.random().toString().substring(2, 10);
+	}
+
 	await toDatabase(getConnection(), v);
-	return json({ id: v.id }, { status: 201 });
+	return json({ ...v, data: undefined }, { status: 201 });
 }
 
 export async function GET({ request }) {
-	const { id } = await request.json();
-	return new Response(JSON.stringify(await fromDatabase(getConnection(), id)));
+	const v = await request.json();
+
+	const stored = await fromDatabase(getConnection(), v.id);
+
+	if (stored?.view != v.view) return json({}, { status: 401, statusText: 'Wrong view token' });
+
+	return new Response(JSON.stringify(stored));
 }

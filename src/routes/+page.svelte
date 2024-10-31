@@ -67,9 +67,8 @@
 				if (r === false) return;
 
 				if (current_document) {
-					const v = $current_document;
 					$current_document = {
-						...v,
+						...$current_document,
 						name: r,
 						updated: new Date()
 					} as ILocalDocument;
@@ -84,7 +83,7 @@
 			updated: new Date(),
 			sent: new Date()
 		};
-		const v = await fetch('/document', {
+		const response = await fetch('/document', {
 			method: 'POST',
 			body: JSON.stringify($current_document),
 			headers: {
@@ -92,9 +91,13 @@
 			}
 		});
 
+		const o = await response.json();
+
 		$current_document = {
 			...$current_document,
-			id: (await v.json()).id
+			id: o.id,
+			view: o.view,
+			edit: o.edit
 		} as ILocalDocument;
 	}
 </script>
