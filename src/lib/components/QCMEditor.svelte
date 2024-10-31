@@ -19,20 +19,21 @@
 	import { type Writable } from 'svelte/store';
 
 	export let current_document: Writable<ILocalDocument>;
+	let data: any;
 
-	let data = derived_writable(
-		current_document,
-		() => $current_document.data,
-		(v) => ($current_document = { ...$current_document, data: v, updated: new Date() })
-	);
-
+	if (current_document && $current_document)
+		data = derived_writable(
+			current_document,
+			() => ($current_document ? $current_document.data : ''),
+			(v) => ($current_document = { ...$current_document, data: v, updated: new Date() })
+		);
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
 		extensions: [math(), code(), slash(), tikz(), qcm()]
 	});
 </script>
 
-{#if current_document != null && $current_document != null}
+{#if current_document != null && $current_document != null && data}
 	<MarkdownEditor {carta} mode={'auto'} bind:value={$data} />
 {/if}
 

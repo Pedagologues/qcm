@@ -57,6 +57,20 @@ export async function fromDatabase(db: Database, id: number): Promise<IDocument 
 	});
 }
 
+export async function fromDatabaseWithEditToken(
+	db: Database,
+	edit: string
+): Promise<IDocument | null> {
+	const query = `SELECT * FROM documents WHERE edit = ?`;
+
+	return new Promise((resolve, reject) => {
+		db.get(query, [edit], (err, rows) => {
+			if (err) reject(err);
+			resolve(ensureDocumentType(rows));
+		});
+	});
+}
+
 export function ensureDocumentType(v: any): ILocalDocument {
 	return {
 		...v,

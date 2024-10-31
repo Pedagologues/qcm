@@ -100,6 +100,11 @@
 			edit: o.edit
 		} as ILocalDocument;
 	}
+
+	local_documents.subscribe((v) => {
+		if (!v.find((o) => o.local_id === selected))
+			selected = v.find((v) => v.local_id)?.local_id || 0;
+	});
 </script>
 
 <svelte:window
@@ -145,7 +150,8 @@
 		type="button"
 		class="variant-outline btn-icon mx-4 size-8 self-center"
 		on:click={() => {
-			const newId = $local_documents.map((v) => v.local_id).reduce((x, y) => (x > y ? x : y)) + 1;
+			const newId =
+				$local_documents.map((v) => v.local_id).reduce((x, y) => (x > y ? x : y), 0) + 1;
 			$local_documents = $local_documents.concat({
 				id: -1,
 				name: 'New ' + newId,
