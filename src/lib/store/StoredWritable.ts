@@ -3,12 +3,16 @@ import { type Writable } from 'svelte/store';
 export function stored_writable<T>(
 	key: string,
 	store: Writable<T>,
+	after_parse?: (v: any) => T,
 	server_update?: (v: T) => void
 ): Writable<T> {
 	const isBrowser = typeof window !== 'undefined';
 
 	if (isBrowser && localStorage && localStorage[key]) {
-		const v = JSON.parse(localStorage[key]);
+		let v = JSON.parse(localStorage[key]);
+
+		if (after_parse) v = after_parse(v);
+
 		store.set(v);
 		if (server_update) server_update(v);
 	}

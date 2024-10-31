@@ -13,4 +13,16 @@ export interface IDocument {
 	edit?: string;
 }
 
-export const local_documents: Writable<IDocument[]> = stored_writable('documents', writable([]));
+export const local_documents: Writable<IDocument[]> = stored_writable(
+	'documents',
+	writable([]),
+	(o) => {
+		return o.map((v: any) => {
+			return {
+				...v,
+				updated: new Date(v.date),
+				created: new Date(v.created)
+			} as IDocument;
+		});
+	}
+);
