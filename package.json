@@ -18,6 +18,7 @@
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/node": "^22.8.4",
+		"@types/sqlite3": "^3.1.11",
 		"autoprefixer": "^10.4.20",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
@@ -34,9 +35,12 @@
 		"@cartamd/plugin-math": "^4.2.1",
 		"@cartamd/plugin-slash": "^4.1.2",
 		"@cartamd/plugin-tikz": "^4.1.8",
+		"@oslojs/crypto": "^1.0.1",
+		"@oslojs/encoding": "^1.1.0",
 		"carta-md": "^4.6.3",
 		"isomorphic-dompurify": "^2.16.0",
 		"mdast": "^3.0.0",
+		"sqlite3": "^5.1.7",
 		"unified": "^11.0.5",
 		"unist-util-visit": "^5.0.0"
 	}
