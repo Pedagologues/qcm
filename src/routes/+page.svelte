@@ -22,7 +22,7 @@
 	onMount(() => {
 		if ($local_documents.length == 0) {
 			$local_documents = $local_documents.concat({
-				name: 'New',
+				name: 'New 0',
 				local_id: 0,
 				data: '',
 				updated: new Date(),
@@ -81,13 +81,46 @@
 			bind:group={selected}
 			name={doc.name}
 			value={doc.local_id}
-			on:click={(e) => modalStore.trigger(modal_gen())}
+			on:click={(e) => {
+				if (doc.local_id === selected) modalStore.trigger(modal_gen());
+			}}
 			>{doc.name}
 			{#if !doc.sent || doc.sent.getTime() < doc.updated.getTime()}
 				<strong>*</strong>
-			{/if}</Tab
-		>
+			{/if}
+
+			{#if doc.local_id === selected}
+				<button
+					type="button"
+					class="mx-1 *:self-center"
+					on:click={() => {
+						$local_documents = $local_documents.filter((v) => v.local_id != selected);
+						selected;
+					}}
+				>
+					x
+				</button>
+			{/if}
+		</Tab>
 	{/each}
+
+	<button
+		type="button"
+		class="variant-outline btn-icon mx-4 size-8 self-center"
+		on:click={() => {
+			const newId = $local_documents.map((v) => v.local_id).reduce((x, y) => (x > y ? x : y)) + 1;
+			$local_documents = $local_documents.concat({
+				name: 'New ' + newId,
+				local_id: newId,
+				data: '',
+				updated: new Date(),
+				created: new Date()
+			});
+			selected = newId;
+		}}
+	>
+		+
+	</button>
 	<!-- Tab Panels --->
 	<svelte:fragment slot="panel">
 		{#if $current_document}
