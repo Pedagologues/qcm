@@ -172,10 +172,6 @@
 <style>
 	/* Or in global stylesheet */
 	/* Set your monospace font (Required to have the editor working correctly!) */
-	:global(.carta-font-code) {
-		font-family: '...', monospace;
-		font-size: 1.1rem;
-	}
 
 	:global(.tab-list > label) {
 		display: flex;

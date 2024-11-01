@@ -13,8 +13,8 @@
 	import 'katex/dist/katex.css';
 
 	import { qcm } from '$lib/plugin-qcm';
+	import { tailwind } from '$lib/plugin-tailwind';
 	import type ILocalDocument from '$lib/types/ILocalDocument';
-	import DOMPurify from 'dompurify';
 
 	interface ICurrentDoc {
 		get_value(): ILocalDocument;
@@ -26,8 +26,8 @@
 	let start_id = current_document.get_value().local_id;
 
 	const carta = new Carta({
-		sanitizer: DOMPurify.sanitize,
-		extensions: [math(), code(), slash(), tikz(), qcm()]
+		sanitizer: false,
+		extensions: [math(), code(), slash(), tikz(), qcm(), tailwind()]
 	});
 
 	let h_value = $state(current_document.get_value().data);
@@ -62,7 +62,7 @@
 
 {#if current_document.get_value()}
 	{#key current_id}
-		<MarkdownEditor {carta} mode={'auto'} bind:value={editor_data.value} />
+		<MarkdownEditor disableToolbar {carta} mode={'auto'} bind:value={editor_data.value} />
 	{/key}
 {/if}
 
