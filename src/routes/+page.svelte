@@ -82,12 +82,16 @@
 		if (e.ctrlKey && e.key === 's') {
 			e.preventDefault();
 			save_current();
+		} else if (e.ctrlKey && e.key === 'd') {
+			e.preventDefault();
+			$local_documents = $local_documents.filter((v) => v.local_id != $selected);
+			selected;
 		}
 	}}
 />
 
 <Modal />
-<TabGroup regionList="self-center" regionPanel="self-center">
+<TabGroup regionList="self-center" regionPanel="self-center ">
 	{#each $local_documents as doc}
 		<Tab
 			regionTab="self-center"
@@ -123,23 +127,44 @@
 		onclick={() => {
 			const newId =
 				$local_documents.map((v) => v.local_id).reduce((x, y) => (x > y ? x : y), 0) + 1;
-			$local_documents = $local_documents.concat({
+			const doc = {
 				id: -1,
 				name: 'New ' + newId,
 				local_id: newId,
 				data: '',
 				updated: new Date(),
 				created: new Date()
-			});
+			};
+			$local_documents = $local_documents.concat(doc);
+			console.log(doc);
 			$selected = newId;
+			console.log(doc);
 		}}
 	>
 		+
 	</button>
+
+	<div class="flex-1"></div>
+
+	<button
+		type="button"
+		class={current_document.value?.edit
+			? 'variant-filled btn mx-4 my-2'
+			: 'variant-filled btn mx-4 my-2 cursor-not-allowed grayscale'}
+		onclick={(e) =>
+			navigator.clipboard.writeText(window.location.href + '/' + current_document.value?.edit)}
+		>Edit Link</button
+	>
+
 	<!-- Tab Panels --->
 	<svelte:fragment slot="panel">
 		{#if current_document.value}
-			<QcmEditor current_document={current_document as any} />
+			<QcmEditor
+				current_document={{
+					get_value: () => current_document.value as ILocalDocument,
+					set_value: (v) => (current_document.value = v)
+				}}
+			/>
 		{/if}
 	</svelte:fragment>
 </TabGroup>

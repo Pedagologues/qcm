@@ -17,23 +17,35 @@
 	import DOMPurify from 'dompurify';
 
 	interface ICurrentDoc {
-		value: ILocalDocument;
+		get_value(): ILocalDocument;
+		set_value(v: ILocalDocument): void;
 	}
 
 	let { current_document }: { current_document: ICurrentDoc } = $props();
+
+	let start_id = current_document.get_value().local_id;
+
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
 		extensions: [math(), code(), slash(), tikz(), qcm()]
 	});
 
-	let h_value = $state(current_document.value?.data);
+	let h_value = $state(current_document.get_value().data);
 	$effect(() => {
-		if (current_document.value.data === h_value) return;
-		current_document.value = {
-			...current_document.value,
+		if (current_document.get_value().local_id !== start_id) {
+			h_value = current_document.get_value().data;
+			start_id = current_document.get_value().local_id;
+		}
+		if (
+			current_document.get_value().data === h_value ||
+			current_document.get_value().local_id !== start_id
+		)
+			return;
+		current_document.set_value({
+			...current_document.get_value(),
 			data: h_value,
 			updated: new Date()
-		};
+		});
 	});
 
 	let editor_data = {
@@ -44,10 +56,14 @@
 			h_value = v;
 		}
 	};
+
+	const current_id = $derived(current_document.get_value().local_id);
 </script>
 
-{#if current_document}
-	<MarkdownEditor {carta} mode={'auto'} bind:value={editor_data.value} />
+{#if current_document.get_value()}
+	{#key current_id}
+		<MarkdownEditor {carta} mode={'auto'} bind:value={editor_data.value} />
+	{/key}
 {/if}
 
 <style>
