@@ -87,9 +87,10 @@
 />
 
 <Modal />
-<TabGroup>
+<TabGroup regionList="self-center" regionPanel="self-center">
 	{#each $local_documents as doc}
 		<Tab
+			regionTab="self-center"
 			bind:group={$selected}
 			name={doc.name}
 			value={doc.local_id}
@@ -149,5 +150,9 @@
 	:global(.carta-font-code) {
 		font-family: '...', monospace;
 		font-size: 1.1rem;
+	}
+
+	:global(.tab-list > label) {
+		display: flex;
 	}
 </style>
