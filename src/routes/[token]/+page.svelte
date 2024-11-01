@@ -18,7 +18,7 @@
 			local_id: newId
 		};
 
-		$local_documents = $local_documents.concat(doc);
+		$local_documents = $local_documents.filter((v) => v.id == -1 || v.id != doc.id).concat(doc);
 
 		goto('/');
 	}

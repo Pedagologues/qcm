@@ -1,56 +1,25 @@
 <script lang="ts">
-	// Component default theme
-	import 'carta-md/default.css';
-	// Extentsions themes
-	import '@cartamd/plugin-code/default.css';
-	import '@cartamd/plugin-emoji/default.css';
-	import '@cartamd/plugin-slash/default.css';
-	import 'katex/dist/katex.css';
-
-	import { Tab, TabGroup } from '@skeletonlabs/skeleton';
-
-	import { getModalStore, Modal, type ModalSettings } from '@skeletonlabs/skeleton';
+	import { getModalStore, Modal, Tab, TabGroup, type ModalSettings } from '@skeletonlabs/skeleton';
 
 	import QcmEditor from '$lib/components/QCMEditor.svelte';
-	import { derived_writable } from '$lib/store';
 	import type ILocalDocument from '$lib/types/ILocalDocument';
-	import { onMount } from 'svelte';
-	import { type Writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import { local_documents } from '../store';
 
-	let selected: number = 0;
+	let selected: Writable<number | undefined> = writable(0);
 
-	onMount(() => {
-		if ($local_documents.length == 0) {
-			$local_documents = $local_documents.concat({
-				id: -1,
-				name: 'New 0',
-				local_id: 0,
-				data: '',
-				updated: new Date(),
-				created: new Date()
-			});
-		}
-
-		selected =
-			$local_documents
-				.toSorted((v1, v2) => v1.updated.getTime() - v2.updated.getTime())
-				.find(() => true)?.local_id || 0;
+	$effect(() => {
+		if (!$local_documents.find((v) => v.local_id === $selected)) $selected = undefined;
 	});
 
-	let current_document: Writable<ILocalDocument> | undefined;
-	$: current_document = $local_documents.find((v) => v.local_id == selected)
-		? derived_writable(
-				local_documents,
-				() => $local_documents.find((v) => v.local_id == selected) as ILocalDocument,
-				(v) => {
-					$local_documents = $local_documents.map((o) => (o.local_id == selected ? v : o));
-				}
-			)
-		: undefined;
+	let current_document = $state({
+		get value() {
+			return $local_documents.find((v) => v.local_id === $selected);
+		},
 
-	current_document?.subscribe((v) => {
-		v.updated = new Date();
+		set value(v) {
+			$local_documents = $local_documents.map((o) => (o.local_id === $selected && v ? v : o));
+		}
 	});
 
 	const modalStore = getModalStore();
@@ -60,15 +29,14 @@
 			type: 'prompt',
 			title: 'Enter Title',
 			body: 'Provide the file title in the prompt below.',
-			value: $current_document?.name,
-			valueAttr: { type: 'text', minlength: 3, maxlength: 16, required: true },
-			// Returns the updated response value
+			value: current_document.value?.name,
+			valueAttr: { type: 'text', minlength: 3, maxlength: 16, required: true, autocomplete: 'off' },
 			response: (r: any) => {
-				if (r === false) return;
+				if (!r || r === false) return;
 
-				if (current_document) {
-					$current_document = {
-						...$current_document,
+				if (current_document.value) {
+					current_document.value = {
+						...current_document.value,
 						name: r,
 						updated: new Date()
 					} as ILocalDocument;
@@ -78,32 +46,34 @@
 	};
 
 	async function save_current() {
-		($current_document as any) = {
-			...$current_document,
+		if (!current_document.value) return;
+		current_document.value = {
+			...current_document.value,
 			updated: new Date(),
 			sent: new Date()
 		};
+
 		const response = await fetch('/document', {
 			method: 'POST',
-			body: JSON.stringify($current_document),
+			body: JSON.stringify(current_document.value),
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
 
-		const o = await response.json();
+		const object = await response.json();
 
-		$current_document = {
-			...$current_document,
-			id: o.id,
-			view: o.view,
-			edit: o.edit
+		current_document.value = {
+			...current_document.value,
+			id: object.id,
+			view: object.view,
+			edit: object.edit
 		} as ILocalDocument;
 	}
 
 	local_documents.subscribe((v) => {
-		if (!v.find((o) => o.local_id === selected))
-			selected = v.find((v) => v.local_id)?.local_id || 0;
+		if (!v.find((object) => object.local_id === $selected))
+			$selected = v.find((v) => v.local_id)?.local_id || 0;
 	});
 </script>
 
@@ -120,23 +90,23 @@
 <TabGroup>
 	{#each $local_documents as doc}
 		<Tab
-			bind:group={selected}
+			bind:group={$selected}
 			name={doc.name}
 			value={doc.local_id}
 			on:click={(e) => {
-				if (doc.local_id === selected) modalStore.trigger(modal_gen());
+				if (doc.local_id === $selected) modalStore.trigger(modal_gen());
 			}}
 			>{doc.name}
 			{#if !doc.sent || doc.sent.getTime() < doc.updated.getTime()}
 				<strong>*</strong>
 			{/if}
 
-			{#if doc.local_id === selected}
+			{#if doc.local_id === $selected}
 				<button
 					type="button"
 					class="mx-1 *:self-center"
-					on:click={() => {
-						$local_documents = $local_documents.filter((v) => v.local_id != selected);
+					onclick={() => {
+						$local_documents = $local_documents.filter((v) => v.local_id != $selected);
 						selected;
 					}}
 				>
@@ -149,7 +119,7 @@
 	<button
 		type="button"
 		class="variant-outline btn-icon mx-4 size-8 self-center"
-		on:click={() => {
+		onclick={() => {
 			const newId =
 				$local_documents.map((v) => v.local_id).reduce((x, y) => (x > y ? x : y), 0) + 1;
 			$local_documents = $local_documents.concat({
@@ -160,15 +130,15 @@
 				updated: new Date(),
 				created: new Date()
 			});
-			selected = newId;
+			$selected = newId;
 		}}
 	>
 		+
 	</button>
 	<!-- Tab Panels --->
 	<svelte:fragment slot="panel">
-		{#if $current_document}
-			<QcmEditor bind:current_document={current_document as Writable<ILocalDocument>} />
+		{#if current_document.value}
+			<QcmEditor current_document={current_document as any} />
 		{/if}
 	</svelte:fragment>
 </TabGroup>

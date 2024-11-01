@@ -16,7 +16,7 @@ export async function toDatabase(db: Database, document: ILocalDocument): Promis
 					document.name,
 					document.data,
 					document.created.getTime(),
-					document.created.getTime(),
+					document.updated.getTime(),
 					document.view || null,
 					document.edit || null
 				],

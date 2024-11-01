@@ -13,28 +13,41 @@
 	import 'katex/dist/katex.css';
 
 	import { qcm } from '$lib/plugin-qcm';
-	import { derived_writable } from '$lib/store';
 	import type ILocalDocument from '$lib/types/ILocalDocument';
-	import DOMPurify from 'isomorphic-dompurify';
-	import { type Writable } from 'svelte/store';
+	import DOMPurify from 'dompurify';
 
-	export let current_document: Writable<ILocalDocument>;
-	let data: any;
+	interface ICurrentDoc {
+		value: ILocalDocument;
+	}
 
-	if (current_document && $current_document)
-		data = derived_writable(
-			current_document,
-			() => ($current_document ? $current_document.data : ''),
-			(v) => ($current_document = { ...$current_document, data: v, updated: new Date() })
-		);
+	let { current_document }: { current_document: ICurrentDoc } = $props();
 	const carta = new Carta({
 		sanitizer: DOMPurify.sanitize,
 		extensions: [math(), code(), slash(), tikz(), qcm()]
 	});
+
+	let h_value = $state(current_document.value?.data);
+	$effect(() => {
+		if (current_document.value.data === h_value) return;
+		current_document.value = {
+			...current_document.value,
+			data: h_value,
+			updated: new Date()
+		};
+	});
+
+	let editor_data = {
+		get value() {
+			return h_value;
+		},
+		set value(v) {
+			h_value = v;
+		}
+	};
 </script>
 
-{#if current_document != null && $current_document != null && data}
-	<MarkdownEditor {carta} mode={'auto'} bind:value={$data} />
+{#if current_document}
+	<MarkdownEditor {carta} mode={'auto'} bind:value={editor_data.value} />
 {/if}
 
 <style>

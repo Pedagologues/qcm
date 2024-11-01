@@ -10,6 +10,7 @@ import { getConnection } from '../../hooks.server.js';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	const v: ILocalDocument = ensureDocumentType(await request.json());
+
 	if (v.id && v.id != -1) {
 		const stored = await fromDatabaseWithEditToken(getConnection(), v.id);
 
