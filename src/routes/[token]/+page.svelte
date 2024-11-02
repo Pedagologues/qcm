@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { ensureDocumentType } from '$lib/database/DocumentManipulator.js';
 	import { qcm } from '$lib/plugin-qcm/qcm.js';
 	import { tailwind } from '$lib/plugin-tailwind/tailwind.js';
@@ -57,10 +58,22 @@
 		};
 	}
 
+	let query = new URLSearchParams($page.url.searchParams.toString());
 	const [about, ...questions] = (db_doc?.data || '').split('#?#');
 
-	let is_viewing_about = $state(true);
-	let current_page = $state(-1);
+	let is_viewing_about = $state((query.get('about') || '1') === '1');
+	$effect(() => {
+		query.set('about', is_viewing_about ? '1' : '0');
+		goto(`?${query.toString()}`, { replaceState: true });
+	});
+
+	let current_page = $state(Number.parseInt(query.get('page') || '0'));
+	$effect(() => {
+		query.set('page', current_page.toString());
+		goto(`?${query.toString()}`, { replaceState: true });
+	});
+
+	// let current_page = $state(-1);
 	const carta = new Carta({
 		sanitizer: false,
 		extensions: [math(), code(), slash(), tikz(), qcm({ view: true }), tailwind()]
