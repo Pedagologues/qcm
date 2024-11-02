@@ -136,9 +136,7 @@
 				created: new Date()
 			};
 			$local_documents = $local_documents.concat(doc);
-			console.log(doc);
 			$selected = newId;
-			console.log(doc);
 		}}
 	>
 		+

@@ -71,6 +71,22 @@ export async function fromDatabaseWithEditToken(
 	});
 }
 
+export async function fromDatabaseWithPublicToken(
+	db: Database,
+	view: string
+): Promise<IDocument | null> {
+	const query = `SELECT * FROM documents WHERE view = ?`;
+
+	return new Promise((resolve, reject) => {
+		db.get(query, [view], (err, rows) => {
+			if (err) reject(err);
+			const doc = ensureDocumentType(rows);
+			doc.edit = undefined;
+			resolve(doc);
+		});
+	});
+}
+
 export function ensureDocumentType(v: any): ILocalDocument {
 	return {
 		...v,

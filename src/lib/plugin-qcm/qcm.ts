@@ -1,8 +1,12 @@
 import type { Plugin } from 'carta-md';
+import type { Root as HRoot } from 'hast';
 import type { Root, RootContent } from 'mdast';
 import type { Plugin as UPlugin } from 'unified';
+import { visit } from 'unist-util-visit';
 
-export type QCMExtensionOptions = {};
+export type QCMExtensionOptions = {
+	view: boolean;
+};
 
 const REGEX = /(#\?#\n?)/;
 
@@ -31,6 +35,26 @@ export const qcm = (options?: QCMExtensionOptions): Plugin => {
 				type: 'remark',
 				transform({ processor: n }): void {
 					n.use(qcm_plugin);
+				}
+			},
+			{
+				execution: 'sync',
+				type: 'rehype',
+				transform({ processor }): void {
+					if (options?.view)
+						processor.use(() => {
+							return (tree: HRoot) => {
+								let i = 0;
+								visit(tree, (node, index, parent) => {
+									if (node.type !== 'element') return;
+									if (node.tagName !== 'input') return;
+									node.properties.checked = undefined;
+									node.properties.disabled = undefined;
+									node.properties.id = 'answer_' + i;
+									i += 1;
+								});
+							};
+						});
 				}
 			}
 		],
