@@ -150,8 +150,18 @@
 			? 'variant-filled btn mx-4 my-2'
 			: 'variant-filled btn mx-4 my-2 cursor-not-allowed grayscale'}
 		onclick={(e) =>
-			navigator.clipboard.writeText(window.location.href + '/' + current_document.value?.edit)}
-		>Edit Link</button
+			navigator.clipboard.writeText(window.location.href + current_document.value?.view || '')}
+		>Copy View Link</button
+	>
+
+	<button
+		type="button"
+		class={current_document.value?.edit
+			? 'variant-filled btn mx-4 my-2'
+			: 'variant-filled btn mx-4 my-2 cursor-not-allowed grayscale'}
+		onclick={(e) =>
+			navigator.clipboard.writeText(window.location.href + current_document.value?.edit || '')}
+		>Copy Edit Link</button
 	>
 
 	<!-- Tab Panels --->

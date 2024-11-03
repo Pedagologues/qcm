@@ -88,6 +88,7 @@ export async function fromDatabaseWithPublicToken(
 }
 
 export function ensureDocumentType(v: any): ILocalDocument {
+	if (!v) throw new Error();
 	return {
 		...v,
 		updated: v.updated ? new Date(v.updated) : undefined,

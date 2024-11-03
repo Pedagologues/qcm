@@ -5,6 +5,7 @@ export interface PerQuestionAnswer {
 
 export default interface IAnswer {
 	qcm_id: number;
+	view: string;
 	answers: PerQuestionAnswer[];
 	version: string;
 }
