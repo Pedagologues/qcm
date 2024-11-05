@@ -1,4 +1,7 @@
-import { fromDatabaseWithPublicToken } from '$lib/database/DocumentManipulator';
+import {
+	fromDatabaseWithEditToken,
+	fromDatabaseWithPublicToken
+} from '$lib/database/DocumentManipulator';
 import type IDocument from '$lib/types/IDocument';
 import { error } from '@sveltejs/kit';
 import { getConnection } from '../../hooks.server';
@@ -10,7 +13,7 @@ export async function load({ params }: any): Promise<{ doc?: IDocument; edit: bo
 	// Edit token
 	if (token[0] === 'E') {
 		try {
-			let doc = await fromDatabaseWithPublicToken(getConnection(), token);
+			let doc = await fromDatabaseWithEditToken(getConnection(), token);
 			if (!doc) throw new Error();
 			return { doc, edit: true };
 		} catch (e) {

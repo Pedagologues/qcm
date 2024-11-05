@@ -52,7 +52,11 @@ export async function fromDatabase(db: Database, id: number): Promise<IDocument 
 	return new Promise((resolve, reject) => {
 		db.get(query, [id], (err, rows) => {
 			if (err) reject(err);
-			resolve(ensureDocumentType(rows));
+			try {
+				resolve(ensureDocumentType(rows));
+			} catch (e) {
+				reject(e);
+			}
 		});
 	});
 }
@@ -66,7 +70,12 @@ export async function fromDatabaseWithEditToken(
 	return new Promise((resolve, reject) => {
 		db.get(query, [edit], (err, rows) => {
 			if (err) reject(err);
-			resolve(ensureDocumentType(rows));
+
+			try {
+				resolve(ensureDocumentType(rows));
+			} catch (e) {
+				reject(e);
+			}
 		});
 	});
 }
@@ -80,9 +89,14 @@ export async function fromDatabaseWithPublicToken(
 	return new Promise((resolve, reject) => {
 		db.get(query, [view], (err, rows) => {
 			if (err) reject(err);
-			const doc = ensureDocumentType(rows);
-			doc.edit = undefined;
-			resolve(doc);
+
+			try {
+				const doc = ensureDocumentType(rows);
+				doc.edit = undefined;
+				resolve(doc);
+			} catch (e) {
+				reject(e);
+			}
 		});
 	});
 }

@@ -32,7 +32,7 @@
 
 		$local_documents = $local_documents.filter((v) => v.id == -1 || v.id != doc.id).concat(doc);
 
-		goto('/');
+		goto('/', { replaceState: true });
 	}
 
 	const db_doc = raw_db_doc as IDocument;
@@ -137,103 +137,106 @@
 	});
 </script>
 
-<div class="flex flex-col justify-center align-middle">
-	<div class="my-5 w-4/5 self-center">
-		{#if validated}
-			{#each validated as va}
-				<div class={'m-2 rounded p-5 ' + (!va.correct ? 'bg-red-400' : '')}>
-					Question n° {va.question} : {va.correct ? 'CORRECT' : 'FAUX'}
+{#if !edit}
+	<div class="flex flex-col justify-center align-middle">
+		<div class="my-5 w-4/5 self-center">
+			{#if validated}
+				{#each validated as va}
+					<div class={'m-2 rounded p-5 ' + (!va.correct ? 'bg-red-400' : '')}>
+						Question n° {va.question} : {va.correct ? 'CORRECT' : 'FAUX'}
 
-					<div>
-						Votre réponse
-						<Markdown
-							carta={validated_carta}
-							value={va.answer.join('').replaceAll('- [X]', '-').trim()}
-						/>
-
-						{#if !va.correct}
-							<br />
-							La réponse
+						<div>
+							Votre réponse
 							<Markdown
 								carta={validated_carta}
-								value={va.valid.join('').replaceAll('- [X]', '-').trim()}
+								value={va.answer.join('').replaceAll('- [X]', '-').trim()}
 							/>
+
+							{#if !va.correct}
+								<br />
+								La réponse
+								<Markdown
+									carta={validated_carta}
+									value={va.valid.join('').replaceAll('- [X]', '-').trim()}
+								/>
+							{/if}
+						</div>
+					</div>
+				{/each}
+			{:else}
+				<div class=" rounded bg-slate-50 p-4">
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div class="m-5 self-center" {onclick}>
+						{#if is_viewing_about}
+							<Markdown {carta} value={about} />
+						{:else}
+							{#key current_page}
+								<Markdown {carta} value={questions[current_page]} />
+							{/key}
 						{/if}
 					</div>
 				</div>
-			{/each}
-		{:else}
-			<div class=" rounded bg-slate-50 p-4">
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="m-5 self-center" {onclick}>
+				<div class="my-2 flex flex-row">
+					{#if !is_viewing_about}
+						<button class="variant-filled btn" onclick={() => (is_viewing_about = true)}
+							>About</button
+						>
+					{/if}
+
+					<div class="flex-1"></div>
+
+					<button
+						class="variant-filled btn"
+						disabled={(answers.value?.answers?.length || 0) !== questions.length}
+						onclick={async (e) => {
+							const response = await fetch('/qcm', {
+								method: 'POST',
+								body: JSON.stringify(answers.value),
+								headers: {
+									'Content-Type': 'application/json'
+								}
+							});
+
+							validated = await response.json();
+						}}>Valider</button
+					>
+					<div class="flex-1"></div>
+
 					{#if is_viewing_about}
-						<Markdown {carta} value={about} />
+						{#if current_page == -1}
+							<button
+								class="variant-filled btn"
+								onclick={() => {
+									is_viewing_about = false;
+									current_page = 0;
+								}}>Démarrer</button
+							>
+						{:else}
+							<button
+								class="variant-filled btn"
+								onclick={() => {
+									is_viewing_about = false;
+								}}>Revenir au QCM</button
+							>
+						{/if}
 					{:else}
-						{#key current_page}
-							<Markdown {carta} value={questions[current_page]} />
-						{/key}
+						<div class="flex flex-row gap-5">
+							<button
+								class="variant-filled btn"
+								disabled={current_page <= 0}
+								onclick={() => (current_page = Math.max(0, current_page - 1))}>Précédent</button
+							>
+							<button
+								class="variant-filled btn"
+								disabled={current_page >= questions.length - 1}
+								onclick={() => (current_page = Math.min(questions.length - 1, current_page + 1))}
+								>Suivant</button
+							>
+						</div>
 					{/if}
 				</div>
-			</div>
-			<div class="my-2 flex flex-row">
-				{#if !is_viewing_about}
-					<button class="variant-filled btn" onclick={() => (is_viewing_about = true)}>About</button
-					>
-				{/if}
-
-				<div class="flex-1"></div>
-
-				<button
-					class="variant-filled btn"
-					disabled={(answers.value?.answers?.length || 0) !== questions.length}
-					onclick={async (e) => {
-						const response = await fetch('/qcm', {
-							method: 'POST',
-							body: JSON.stringify(answers.value),
-							headers: {
-								'Content-Type': 'application/json'
-							}
-						});
-
-						validated = await response.json();
-					}}>Valider</button
-				>
-				<div class="flex-1"></div>
-
-				{#if is_viewing_about}
-					{#if current_page == -1}
-						<button
-							class="variant-filled btn"
-							onclick={() => {
-								is_viewing_about = false;
-								current_page = 0;
-							}}>Démarrer</button
-						>
-					{:else}
-						<button
-							class="variant-filled btn"
-							onclick={() => {
-								is_viewing_about = false;
-							}}>Revenir au QCM</button
-						>
-					{/if}
-				{:else}
-					<div class="flex flex-row gap-5">
-						<button
-							class="variant-filled btn"
-							disabled={current_page <= 0}
-							onclick={() => (current_page = Math.max(0, current_page - 1))}>Précédent</button
-						>
-						<button
-							class="variant-filled btn"
-							disabled={current_page >= questions.length - 1}
-							onclick={() => (current_page = Math.min(questions.length - 1, current_page + 1))}
-							>Suivant</button
-						>
-					</div>
-				{/if}
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
-</div>
+{/if}
