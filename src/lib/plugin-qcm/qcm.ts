@@ -8,20 +8,46 @@ export type QCMExtensionOptions = {
 	view: boolean;
 };
 
-const REGEX = /(#\?#\n?)/;
+const REGEX = /(\n#\?#\n?)/;
 
 const qcm_plugin: UPlugin<void[], Root> = () => {
 	return (tree) => {
 		tree.children = tree.children
 			.map((node): RootContent[] => {
 				if (node.type != 'paragraph') return [node];
-				if (!node.children.find((v) => v.type == 'text' && v.value.includes('#?#'))) return [node];
-				return [
-					{
-						type: 'paragraph',
-						children: [{ type: 'text', value: '===== NEW QUESTION =====' }]
+				if (!node.children.find((v) => v.type == 'text' && v.value.includes('\n#?#')))
+					return [node];
+				if (node.children.find((v) => v.type == 'text' && v.value.split('\n#?#').length > 2))
+					return [node];
+
+				console.log(node);
+
+				const missingChild: RootContent[] = [];
+
+				node.children.forEach((v, i) => {
+					if (v.type !== 'text') missingChild.push(v);
+					else {
+						const txt = v.value;
+						if (!txt.includes('\n#?#')) missingChild.push(v);
+						else {
+							txt.split('\n#?#').forEach((o, j) => {
+								if (o.trim().length !== 0) {
+									missingChild.push({
+										type: 'paragraph',
+										children: [{ type: 'text', value: o }]
+									});
+								}
+								if (o.trim().length !== 0 || j == 0)
+									missingChild.push({
+										type: 'paragraph',
+										children: [{ type: 'text', value: '===== NEW QUESTION =====' }]
+									});
+							});
+						}
 					}
-				];
+				});
+
+				return missingChild;
 			})
 			.flat();
 	};
@@ -63,7 +89,7 @@ export const qcm = (options?: QCMExtensionOptions): Plugin => {
 				name: 'question',
 				type: 'inline',
 				definition: {
-					match: '(#\\?#\n+)',
+					match: '(^#\\?#\n+)',
 					name: 'markup.inline.question',
 					captures: {
 						'1': { name: 'marker.definition.question.inline' }
@@ -76,7 +102,7 @@ export const qcm = (options?: QCMExtensionOptions): Plugin => {
 				light: {
 					scope: 'marker.definition.question',
 					settings: {
-						foreground: '#5AF'
+						foreground: '#0b0'
 					}
 				},
 				dark: {
