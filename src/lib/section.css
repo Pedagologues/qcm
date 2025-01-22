@@ -1,0 +1,22 @@
+.question-section {
+    position: relative;
+    padding: 5pt;
+}
+
+.question-section-body {
+	border: solid gray;
+	margin: 5pt;
+	text-align: left;
+	padding: 5pt;
+}
+
+.question-section-title {
+	color: gray;
+    background-color: rgb(var(--color-surface-50));
+    text-align: center;
+    padding: 0pt 5pt;
+	text-align: center;
+    top: 0;
+	left: 10%;
+	position: absolute;
+}
