@@ -4,7 +4,7 @@ import { skeleton } from '@skeletonlabs/tw-plugin';
 import { join } from 'path';
 
 export default {
-	darkMode: 'selector',
+	darkMode: 'media',
 
 	content: [
 		'./src/**/*.{html,js,svelte,ts}',
