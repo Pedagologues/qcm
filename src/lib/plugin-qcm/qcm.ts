@@ -22,9 +22,10 @@ const qcm_plugin: UPlugin<void[], Root> = () => {
 		if (JSON.stringify(list).includes('"tagName":"input"')) type = 'Question';
 		else type = 'Text';
 
-		indexer.set(sanitizer(type), (indexer.get(sanitizer(type)) || 0) + 1);
+		const type_count = indexer.get(sanitizer(type));
 
-		let real_title = type + ' #' + indexer.get(sanitizer(type));
+		let real_title = type + (type_count ? ' #' + type_count : '');
+		indexer.set(sanitizer(type), (type_count || 0) + 1);
 
 		if (title) {
 			const v = indexer.get(sanitizer(title));
