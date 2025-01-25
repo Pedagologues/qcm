@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { autoModeWatcher } from '@skeletonlabs/skeleton';
+	import { autoModeWatcher, Modal } from '@skeletonlabs/skeleton';
+	import { initializeStores } from '@skeletonlabs/skeleton';
 	import '../app.css';
 
-	import { initializeStores } from '@skeletonlabs/skeleton';
 	let { children } = $props();
+
 	initializeStores();
 </script>
 
@@ -18,4 +19,5 @@
 		<h3 class="h3">QCM</h3>
 	</a>
 </div>
+<Modal />
 {@render children()}
