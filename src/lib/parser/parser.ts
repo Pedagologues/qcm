@@ -1,4 +1,4 @@
-import type { IQCMDocument, IQCMQuestionSection, IQCMSection, IQCMTextSection } from './types';
+import type { IQCMDocument, IQCMQuestionSection, IQCMSection, IQCMTextSection } from './../types';
 
 export function parse_document(md: string): IQCMDocument {
 	const REGEX = /(^|\n)(#\?#)(\s*\((.*)\))?\s*/gm;
