@@ -5,7 +5,7 @@
 	import { tikz } from '@cartamd/plugin-tikz';
 	import { Carta, MarkdownEditor } from 'carta-md';
 	// Component default theme
-	import 'carta-md/default.css';
+	import './cartamd.css';
 	// Extentsions themes
 	import '@cartamd/plugin-code/default.css';
 	import '@cartamd/plugin-emoji/default.css';
