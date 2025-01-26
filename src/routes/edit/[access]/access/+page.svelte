@@ -91,13 +91,12 @@
 							oninput={(e: any) => {
 								reads.update((v) => {
 									v[read.index].alias = e.target.value;
-
 									return v;
 								});
 							}}
 						/>
 					</th>
-					<td class="w-0 shadow-lg">{read.access}</td>
+					<td class="whitespace-nowrap shadow-lg">{read.access}</td>
 					<td class="w-20 shadow-lg hover:text-blue-400"
 						><a href={origin + '/view/' + read.access} target="_blank">Go to url</a></td
 					>
