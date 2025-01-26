@@ -2,6 +2,7 @@ import { loadAccess, loadDocument, newAccess, saveDocument } from '.';
 import type { IQCMQuestionSection } from '../types';
 import type { IDocument, IDocumentAccess } from '$lib/types';
 import { appendReadToWrite } from './database/access';
+import { parse_document } from '../parser';
 
 export function saveWithAccess(access_id: string, doc: IDocument) {
 	const access = loadAccess(access_id);
@@ -23,18 +24,28 @@ export function loadWithAccess(
 	if (!document) throw new Error('Could not find document');
 
 	// Remove answer if permission is read
-	if (access.permission === 'read')
+	if (access.permission === 'read') {
+		const remove_answers = (v: string): string =>
+			v.replaceAll('\n- [X]', '\n- [ ]').replaceAll('\n- [x]', '\n- [ ]');
+
+		document.data = parse_document(document.data.raw);
 		document = {
 			...document,
 			data: {
 				...document.data,
+				raw: remove_answers(document.data.raw),
 				sections: document.data.sections.map((v) => {
 					if (v.type === 'question') {
 						const question_section = v as IQCMQuestionSection;
 						return {
 							...question_section,
+							raw: remove_answers(v.raw),
 							questions: question_section.questions.map((v) => {
-								return { ...v, answer: false };
+								return {
+									...v,
+									answer: false,
+									raw: v.raw.replaceAll('- [X]', '- [ ]').replaceAll('- [x]', '- [ ]')
+								};
 							})
 						};
 					}
@@ -42,7 +53,7 @@ export function loadWithAccess(
 				})
 			}
 		};
-
+	}
 	return { document, read: access.reads || [] };
 }
 
