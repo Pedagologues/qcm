@@ -6,3 +6,7 @@ export const cached_documents: Writable<{ [key: string]: IDocument }> = stored_w
 	'documents',
 	writable({})
 );
+
+export const cached_documents_reads: Writable<{
+	[key: string]: { access: string; alias: string }[];
+}> = stored_writable('document_reads', writable({}));

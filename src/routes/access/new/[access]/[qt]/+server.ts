@@ -12,7 +12,7 @@ export const POST: RequestHandler<{ access: string; qt: string }> = async ({ par
 	try {
 		let read_access = [];
 		for (let i = 0; i < qt; i++) {
-			read_access.push(newReadAccess(write_access));
+			read_access.push(newReadAccess(write_access).id);
 		}
 
 		return json({ data: read_access });

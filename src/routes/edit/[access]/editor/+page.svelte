@@ -5,7 +5,7 @@
 	import { page } from '$app/state';
 	import { writable } from 'svelte/store';
 	import { browser } from '$app/environment';
-	import { cached_documents } from '../../../store';
+	import { cached_documents } from '../../../../store';
 
 	const origin = page.url.origin;
 
@@ -20,7 +20,6 @@
 		cached_documents.update((v) => {
 			let new_v = v || {};
 			new_v[data.access] = data.document;
-			console.log('HHHHh');
 			return new_v;
 		});
 	});
