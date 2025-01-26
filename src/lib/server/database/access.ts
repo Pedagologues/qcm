@@ -50,3 +50,15 @@ export function newAccess(id: string, permission: 'read' | 'write'): IDocumentAc
 
 	return doc;
 }
+
+export function appendReadToWrite(write_access_id: string, id: string) {
+	if (!data) loadFile();
+	assert(data, 'Data should be loaded');
+
+	const write_access = data[write_access_id];
+	assert(write_access, 'Write access is invalid');
+
+	write_access.reads = (write_access.reads || []).concat([id]);
+
+	return write_access;
+}

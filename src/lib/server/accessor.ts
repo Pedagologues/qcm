@@ -1,6 +1,7 @@
-import { loadAccess, loadDocument, saveDocument } from '.';
+import { loadAccess, loadDocument, newAccess, saveDocument } from '.';
 import type { IQCMQuestionSection } from '../types';
 import type { IDocument, IDocumentAccess } from '$lib/types';
+import { appendReadToWrite } from './database/access';
 
 export function saveWithAccess(access_id: string, doc: IDocument) {
 	const access = loadAccess(access_id);
@@ -11,7 +12,9 @@ export function saveWithAccess(access_id: string, doc: IDocument) {
 	saveDocument(doc);
 }
 
-export function loadWithAccess(access_id: string): IDocument | undefined {
+export function loadWithAccess(
+	access_id: string
+): { document: IDocument; read: string[] } | undefined {
 	const access = loadAccess(access_id);
 
 	if (!access) throw new Error('Could not recognize access');
@@ -40,5 +43,19 @@ export function loadWithAccess(access_id: string): IDocument | undefined {
 			}
 		};
 
-	return document;
+	return { document, read: access.reads || [] };
+}
+
+export function newReadAccess(access_id: string): IDocumentAccess {
+	const access = loadAccess(access_id);
+	if (!access) throw new Error('Could not recognize access');
+
+	let document = loadDocument(access.document_id);
+	if (!document) throw new Error('Could not find document');
+
+	const new_access = newAccess(document.id, 'read');
+
+	appendReadToWrite(access_id, new_access.id);
+
+	return new_access;
 }

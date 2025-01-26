@@ -2,7 +2,7 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
-import type { IDocument, IQCMDocument } from '../../../lib/types';
+import type { IDocument } from '../../../lib/types';
 import { loadWithAccess, saveWithAccess } from '../../../lib/server/accessor';
 
 export const POST: RequestHandler<{ access: string }> = async ({ params, request }) => {
@@ -24,7 +24,8 @@ export const GET: RequestHandler<{ access: string }> = async ({ params }) => {
 	const access = params.access;
 
 	try {
-		return json({ data: loadWithAccess(access) });
+		const value = loadWithAccess(access);
+		return json({ data: value?.document, reads: value?.read });
 	} catch (e) {
 		return json(e);
 	}

@@ -13,4 +13,5 @@ export interface IDocumentAccess {
 	id: string;
 	document_id: string;
 	permission: DocumentPermission;
+	reads?: string[];
 }
