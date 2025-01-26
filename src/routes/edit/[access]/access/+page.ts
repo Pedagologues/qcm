@@ -20,8 +20,6 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			}
 		}).then((v) => v.json());
 
-		console.log(object.reads);
-
 		data = object?.data;
 		reads =
 			(object?.reads as string[]).map((v) => {

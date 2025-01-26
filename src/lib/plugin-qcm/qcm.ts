@@ -9,7 +9,7 @@ export type QCMExtensionOptions = {
 
 const REGEX = /(\n#\?#\n?)/;
 
-const qcm_plugin: UPlugin<void[], Root> = () => {
+const qcm_section_plugin: UPlugin<void[], Root> = () => {
 	let section_creator = (
 		list: RootContent[],
 		indexer: Map<string, number>,
@@ -109,6 +109,25 @@ const qcm_plugin: UPlugin<void[], Root> = () => {
 	};
 };
 
+const qcm_answer_plugin: UPlugin<void[], Root> = () => {
+	// const enable_checkbox = (tree: )
+
+	return (tree) => {
+		tree.children = tree.children.map((list: any) => {
+			if (list.tagName != 'ul' && list.tagName != 'ol') return list;
+
+			list.children = list.children.map((v: any) => {
+				if (v.tagName != 'li') return v;
+				if (v.children[0].tagName != 'input') return v;
+				v.children[0].properties.disabled = undefined;
+				return v;
+			});
+
+			return list;
+		});
+	};
+};
+
 export const qcm = (options?: QCMExtensionOptions): Plugin => {
 	return {
 		transformers: [
@@ -116,7 +135,14 @@ export const qcm = (options?: QCMExtensionOptions): Plugin => {
 				execution: 'sync',
 				type: 'rehype',
 				transform({ processor }): void {
-					processor.use(qcm_plugin);
+					if (options?.view) processor.use(qcm_answer_plugin);
+				}
+			},
+			{
+				execution: 'sync',
+				type: 'rehype',
+				transform({ processor }): void {
+					processor.use(qcm_section_plugin);
 				}
 			}
 		]
