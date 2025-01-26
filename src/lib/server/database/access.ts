@@ -59,6 +59,8 @@ export function appendReadToWrite(write_access_id: string, id: string) {
 	assert(write_access, 'Write access is invalid');
 
 	write_access.reads = (write_access.reads || []).concat([id]);
+	saveFile();
+	data[write_access_id] = write_access;
 
 	return write_access;
 }
