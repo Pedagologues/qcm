@@ -5,8 +5,29 @@
 	import type { IQCMQuestionSection, IQCMTextSection } from '../../../lib/types';
 	import { cached_documents } from '../../../store';
 	import type { PageProps } from './$types';
+	import { get, writable } from 'svelte/store';
 
 	const { data }: PageProps = $props();
+	let disabled_submition = writable(
+		get(cached_documents)
+			[data.access].data.sections.filter((v) => v.type === 'question')
+			.map((v) => v as IQCMQuestionSection)
+			.filter((v) => v.questions.filter((o) => o.answer).length == 0).length > 0
+	);
+
+	const onSubmit = async function () {
+		if ($disabled_submition) return;
+
+		const obj = await fetch(origin + '/access/' + data.access + '/answer', {
+			method: 'POST',
+			body: JSON.stringify(get(cached_documents)[data.access]),
+			headers: {
+				'content-type': 'application/json'
+			}
+		}).then((v) => v.json());
+
+		console.log(obj);
+	};
 
 	const onCheckboxChange = function (e: any) {
 		const input_el = e.target as Element;
@@ -47,6 +68,12 @@
 
 			return v;
 		});
+
+		$disabled_submition =
+			get(cached_documents)
+				[data.access].data.sections.filter((v) => v.type === 'question')
+				.map((v) => v as IQCMQuestionSection)
+				.filter((v) => v.questions.filter((o) => o.answer).length == 0).length > 0;
 	};
 
 	onMount(() => {
@@ -77,5 +104,13 @@
 <div class="relative flex flex-1 flex-col items-center py-5">
 	<div class="w-2/3 rounded-lg bg-surface-800 p-10 shadow-lg">
 		<QcmRenderer value={data.document.data.raw} />
+
+		<div class="flex justify-end">
+			<button
+				class="btn btn-md rounded-sm bg-surface-500 shadow-lg"
+				disabled={$disabled_submition}
+				onclick={onSubmit}>Submit</button
+			>
+		</div>
 	</div>
 </div>

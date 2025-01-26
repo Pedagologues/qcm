@@ -1,4 +1,4 @@
-import { loadAccess, loadDocument, newAccess, saveDocument } from '.';
+import { loadAccess, loadAnswer, loadDocument, newAccess, saveAnswer, saveDocument } from '.';
 import type { IQCMQuestionSection } from '../types';
 import type { IDocument, IDocumentAccess } from '$lib/types';
 import { appendReadToWrite } from './database/access';
@@ -69,4 +69,25 @@ export function newReadAccess(access_id: string): IDocumentAccess {
 	appendReadToWrite(access_id, new_access.id);
 
 	return new_access;
+}
+
+export function submitAnswer(access_id: string, doc: IDocument) {
+	const access = loadAccess(access_id);
+
+	if (!access) throw new Error('Could not recognize access');
+	if (access.permission != 'read') throw new Error('Does not have permission to send submition');
+
+	saveAnswer(doc);
+}
+
+export function retrieveAnswer(access_write: string, access_id: string) {
+	const w_access = loadAccess(access_write);
+
+	if (!w_access) throw new Error('Could not recognize access');
+	if (w_access.permission != 'write' || w_access.reads?.includes(access_id))
+		throw new Error('Does not have permission to read submitions');
+	const r_access = loadAccess(access_id);
+	if (!r_access) return undefined;
+
+	return loadAnswer(r_access.document_id);
 }
