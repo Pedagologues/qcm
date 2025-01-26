@@ -10,8 +10,9 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	const access = params.access;
 
 	let data = get(cached_documents)[access];
+	let reads = get(cached_documents_reads)[access];
 
-	if (!data) {
+	if (!data || !reads) {
 		const object = await fetch('/access/' + access, {
 			method: 'GET',
 			headers: {
@@ -19,17 +20,23 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			}
 		}).then((v) => v.json());
 
-		data = object?.data;
+		console.log(object.reads);
 
-		cached_documents_reads.update((v) => {
-			v[access] = object?.reads || [];
-			return v;
-		});
+		data = object?.data;
+		reads =
+			(object?.reads as string[]).map((v) => {
+				return { access: v, alias: '' };
+			}) || [];
 	}
 
 	if (data) {
 		cached_documents.update((v) => {
 			v[access] = data;
+			return v;
+		});
+
+		cached_documents_reads.update((v) => {
+			v[access] = reads;
 			return v;
 		});
 
