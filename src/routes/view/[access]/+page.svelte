@@ -5,9 +5,12 @@
 	import type { IQCMQuestionSection, IQCMTextSection } from '../../../lib/types';
 	import { cached_documents } from '../../../store';
 	import type { PageProps } from './$types';
-	import { get, writable } from 'svelte/store';
+	import { get, writable, type Writable } from 'svelte/store';
 
 	const { data }: PageProps = $props();
+
+	const error: Writable<string | undefined> = writable(undefined);
+
 	let disabled_submition = writable(
 		get(cached_documents)
 			[data.access].data.sections.filter((v) => v.type === 'question')
@@ -25,6 +28,10 @@
 				'content-type': 'application/json'
 			}
 		}).then((v) => v.json());
+
+		if (obj.error) {
+			$error = obj.message;
+		}
 	};
 
 	const onCheckboxChange = function (e: any) {
@@ -112,3 +119,17 @@
 		</div>
 	</div>
 </div>
+
+{#if $error != null}
+	<div
+		class="absolute bottom-0 right-0 m-5 flex flex-row items-center justify-center gap-5 self-center rounded-lg bg-error-500 p-5"
+	>
+		<div class="flex flex-row gap-5">
+			<p class="font-bold">Error :</p>
+			<p class="type-scale-1 opacity-60">{$error}</p>
+		</div>
+		<button class="preset-tonal btn hover:bg-error-900" onclick={() => ($error = undefined)}
+			>Dismiss</button
+		>
+	</div>
+{/if}

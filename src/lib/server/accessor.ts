@@ -1,8 +1,9 @@
 import { loadAccess, loadAnswer, loadDocument, newAccess, saveAnswer, saveDocument } from '.';
-import type { IDocumentMetadata, IQCMQuestionSection } from '../types';
+import type { IAnswerMetadata, IDocumentMetadata, IQCMQuestionSection } from '../types';
 import type { IDocument, IDocumentAccess } from '$lib/types';
 import { appendReadToWrite } from './database/access';
 import { parse_document } from '../parser';
+import { generateNewId } from './database/qcm';
 
 export function saveWithAccess(access_id: string, doc: IDocument & IDocumentMetadata) {
 	const access = loadAccess(access_id);
@@ -71,11 +72,31 @@ export function newReadAccess(access_id: string): IDocumentAccess {
 	return new_access;
 }
 
-export function submitAnswer(access_id: string, doc: IDocument) {
+export function submitAnswer(access_id: string, doc: IDocument & IAnswerMetadata) {
 	const access = loadAccess(access_id);
 
 	if (!access) throw new Error('Could not recognize access');
 	if (access.permission != 'read') throw new Error('Does not have permission to send submition');
+
+	if (!access.answer) {
+		access.answer = generateNewId();
+		doc.created = new Date().getTime();
+		doc.updated = new Date().getTime();
+		doc.submition_count = 0;
+	}
+
+	const prev_answer = loadAnswer(access.answer);
+
+	doc.id = access.answer;
+	doc.submition_count = (prev_answer?.submition_count || 0) + 1;
+
+	const orig_doc = loadDocument(access.document_id);
+
+	if (orig_doc?.due_date && new Date().getTime() > orig_doc.due_date)
+		throw new Error('Submition is done after due date');
+
+	if (orig_doc?.due_limit && orig_doc.due_limit < doc.submition_count)
+		throw new Error('Too many submitions');
 
 	saveAnswer(doc);
 }
@@ -87,7 +108,7 @@ export function retrieveAnswer(access_write: string, access_id: string) {
 	if (w_access.permission != 'write' || w_access.reads?.includes(access_id))
 		throw new Error('Does not have permission to read submitions');
 	const r_access = loadAccess(access_id);
-	if (!r_access) return undefined;
+	if (!r_access || !r_access.answer) return undefined;
 
-	return loadAnswer(r_access.document_id);
+	return loadAnswer(r_access.answer);
 }

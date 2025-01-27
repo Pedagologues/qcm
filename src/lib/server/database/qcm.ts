@@ -33,7 +33,7 @@ function saveFile() {
 	writeFileSync(NAME, JSON.stringify(data));
 }
 
-function generateNewId(): string {
+export function generateNewId(): string {
 	return randomUUID().toString();
 }
 

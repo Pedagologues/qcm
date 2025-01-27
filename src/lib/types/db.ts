@@ -13,6 +13,10 @@ export interface IDocumentMetadata {
 	instant_correction: boolean;
 }
 
+export interface IAnswerMetadata {
+	submition_count: number;
+}
+
 export type DocumentPermission = 'read' | 'write';
 
 export interface IDocumentAccess {
@@ -20,4 +24,5 @@ export interface IDocumentAccess {
 	document_id: string;
 	permission: DocumentPermission;
 	reads?: string[];
+	answer?: string;
 }
