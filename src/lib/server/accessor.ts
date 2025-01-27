@@ -1,10 +1,10 @@
 import { loadAccess, loadAnswer, loadDocument, newAccess, saveAnswer, saveDocument } from '.';
-import type { IQCMQuestionSection } from '../types';
+import type { IDocumentMetadata, IQCMQuestionSection } from '../types';
 import type { IDocument, IDocumentAccess } from '$lib/types';
 import { appendReadToWrite } from './database/access';
 import { parse_document } from '../parser';
 
-export function saveWithAccess(access_id: string, doc: IDocument) {
+export function saveWithAccess(access_id: string, doc: IDocument & IDocumentMetadata) {
 	const access = loadAccess(access_id);
 
 	if (!access) throw new Error('Could not recognize access');

@@ -7,6 +7,12 @@ export interface IDocument {
 	data: IQCMDocument;
 }
 
+export interface IDocumentMetadata {
+	due_date?: number;
+	due_limit?: number;
+	instant_correction: boolean;
+}
+
 export type DocumentPermission = 'read' | 'write';
 
 export interface IDocumentAccess {

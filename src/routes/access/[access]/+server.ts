@@ -2,15 +2,15 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
-import type { IDocument } from '../../../lib/types';
+import type { IDocument, IDocumentMetadata } from '../../../lib/types';
 import { loadWithAccess, saveWithAccess } from '../../../lib/server/accessor';
 
 export const POST: RequestHandler<{ access: string }> = async ({ params, request }) => {
 	const access = params.access;
-	const data = await request.json().then((v) => v as IDocument);
+	const data = await request.json().then((v) => v as IDocument & IDocumentMetadata);
 
 	try {
-		if (!(data satisfies IDocument)) throw new Error('Wrong data value');
+		if (!(data satisfies IDocument & IDocumentMetadata)) throw new Error('Wrong data value');
 
 		saveWithAccess(access, data);
 	} catch (e) {

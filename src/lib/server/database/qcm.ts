@@ -1,15 +1,15 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import type { IDocument } from '$lib/types';
+import type { IDocument, IDocumentMetadata } from '$lib/types';
 import assert from 'assert';
 import { randomUUID } from 'crypto';
 
 const NAME = 'data/qcm_data.json';
 
 interface Data {
-	[key: string]: IDocument;
+	[key: string]: IDocument & IDocumentMetadata;
 }
 
-function emptyDocument(): IDocument {
+function emptyDocument(): IDocument & IDocumentMetadata {
 	return {
 		id: '-1',
 		updated: new Date().getTime(),
@@ -17,7 +17,8 @@ function emptyDocument(): IDocument {
 		data: {
 			raw: '',
 			sections: []
-		}
+		},
+		instant_correction: false
 	};
 }
 
@@ -36,23 +37,26 @@ function generateNewId(): string {
 	return randomUUID().toString();
 }
 
-export function save(doc: IDocument) {
+export function save(doc: IDocument & IDocumentMetadata) {
 	if (!data) loadFile();
 	assert(data, 'Data should be loaded');
 	doc.updated = new Date().getTime();
 	data[doc.id].updated = new Date().getTime();
 	data[doc.id].data = doc.data;
+	data[doc.id].due_date = doc.due_date;
+	data[doc.id].due_limit = doc.due_limit;
+	data[doc.id].instant_correction = doc.instant_correction;
 	saveFile();
 }
 
-export function load(id: string): IDocument | undefined {
+export function load(id: string): (IDocument & IDocumentMetadata) | undefined {
 	if (!data) loadFile();
 	assert(data, 'Data should be loaded');
 
 	return data[id];
 }
 
-export function newDocument(): IDocument {
+export function newDocument(): IDocument & IDocumentMetadata {
 	if (!data) loadFile();
 	assert(data, 'Data should be loaded');
 

@@ -25,8 +25,6 @@
 				'content-type': 'application/json'
 			}
 		}).then((v) => v.json());
-
-		console.log(obj);
 	};
 
 	const onCheckboxChange = function (e: any) {

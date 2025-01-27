@@ -38,6 +38,7 @@
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"carta-md": "^4.6.3",
+		"dayjs": "^1.11.13",
 		"hast": "^1.0.0",
 		"isomorphic-dompurify": "^2.16.0",
 		"mdast": "^3.0.0",
