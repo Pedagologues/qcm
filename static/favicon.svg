@@ -58,7 +58,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:34.53063382;stroke-dasharray:none"
+       style="fill:none;stroke:#ffffff;stroke-width:39.46358149;stroke-dasharray:none"
        id="path6-2"
        transform="rotate(30)"
        sodipodi:type="arc"
@@ -72,15 +72,15 @@
        d="m 71.280141,21.890132 a 108.42929,108.42929 0 0 1 110.397149,-52.952695 108.42929,108.42929 0 0 1 89.36446,83.698944 108.42929,108.42929 0 0 1 -45.619,113.624059 108.42929,108.42929 0 0 1 -122.43258,-1.33559"
        sodipodi:open="true" />
     <path
-       style="color:#000000;display:inline;fill:#ffffff;-inkscape-stroke:none"
+       style="color:#000000;display:inline;fill:#ffffff;stroke-width:3.28863179;stroke-dasharray:none;stroke:#ffffff;stroke-opacity:1"
        d="m 49.215815,211.46754 -35.85449,62.1018 29.903251,17.26465 35.85449,-62.1018 z m 0.60194,2.24647 27.054833,15.62012 -34.20996,59.25338 -27.054833,-15.62011 z"
        id="path5" />
     <path
-       style="color:#000000;fill:#000000;-inkscape-stroke:none"
+       style="color:#000000;fill:#000000;stroke-width:0;stroke-dasharray:none"
        d="m 49.516092,212.59027 28.480389,16.44316 -35.03264,60.67831 -28.480389,-16.44316 z"
        id="path4" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:32.8863;stroke-dasharray:none"
+       style="fill:none;stroke:#000000;stroke-width:32.88631883;stroke-dasharray:none"
        id="path6"
        transform="rotate(30)"
        sodipodi:type="arc"
@@ -94,7 +94,7 @@
        d="m 71.280141,21.890132 a 108.42929,108.42929 0 0 1 110.397149,-52.952695 108.42929,108.42929 0 0 1 89.36446,83.698944 108.42929,108.42929 0 0 1 -45.619,113.624059 108.42929,108.42929 0 0 1 -122.43258,-1.33559"
        sodipodi:open="true" />
     <ellipse
-       style="fill:#000000;stroke:#ffffff;stroke-width:0.82215794;stroke-dasharray:none"
+       style="display:inline;fill:#000000;stroke:#ffffff;stroke-width:3.28863179;stroke-dasharray:none"
        id="path7"
        cx="165.18266"
        cy="76.104774"
@@ -102,7 +102,7 @@
        ry="20.986567"
        transform="rotate(30)" />
     <path
-       style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:1.64432;stroke-dasharray:none;stroke-opacity:1"
+       style="display:inline;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:1.64432;stroke-dasharray:none;stroke-opacity:1"
        id="path8"
        sodipodi:type="arc"
        sodipodi:cx="264.32486"
