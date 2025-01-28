@@ -18,6 +18,7 @@
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/node": "^22.8.4",
+		"@types/papaparse": "^5.3.15",
 		"@types/sqlite3": "^3.1.11",
 		"autoprefixer": "^10.4.20",
 		"prettier": "^3.3.2",
@@ -42,6 +43,7 @@
 		"hast": "^1.0.0",
 		"isomorphic-dompurify": "^2.16.0",
 		"mdast": "^3.0.0",
+		"papaparse": "^5.5.2",
 		"sqlite3": "^5.1.7",
 		"unified": "^11.0.5",
 		"unist-util-visit": "^5.0.0"
