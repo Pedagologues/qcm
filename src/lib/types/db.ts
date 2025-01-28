@@ -26,3 +26,9 @@ export interface IDocumentAccess {
 	reads?: string[];
 	answer?: string;
 }
+
+export interface IQuestionCorrection {
+	[key: number]: 'missing' | 'wrong' | 'valid';
+}
+
+export type IQCMCorrection = { [key: number]: IQuestionCorrection };

@@ -4,12 +4,12 @@ import { json, redirect } from '@sveltejs/kit';
 import type { IDocument } from '$lib/types';
 import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
-import { cached_documents } from '../../../store';
+import { cached_answers } from '../../../store';
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	const access = params.access;
 
-	let data = get(cached_documents)[access];
+	let data = get(cached_answers)[access];
 
 	if (!data) {
 		data = (
@@ -23,7 +23,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	}
 
 	if (data) {
-		cached_documents.update((v) => {
+		cached_answers.update((v) => {
 			v[access] = data;
 			return v;
 		});

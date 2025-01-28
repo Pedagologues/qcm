@@ -2,17 +2,61 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import QcmRenderer from '../../../lib/components/QCMRenderer.svelte';
-	import type { IQCMQuestionSection, IQCMTextSection } from '../../../lib/types';
-	import { cached_documents } from '../../../store';
+	import type { IQCMCorrection, IQCMQuestionSection, IQCMTextSection } from '../../../lib/types';
+	import { cached_answers, cached_corrections } from '../../../store';
 	import type { PageProps } from './$types';
 	import { get, writable, type Writable } from 'svelte/store';
 
 	const { data }: PageProps = $props();
 
 	const error: Writable<string | undefined> = writable(undefined);
+	const correction: Writable<IQCMCorrection | undefined> = writable(
+		$cached_corrections[data.access]
+	);
+
+	correction.subscribe((new_correction) => {
+		cached_corrections.update((v) => {
+			const n_v = v || {};
+			n_v[data.access] = new_correction;
+			return n_v;
+		});
+	});
+
+	correction.subscribe((new_correction) => {
+		if (!browser) return;
+		let inputs = Array(...document.getElementsByTagName('input'));
+
+		let k = 0;
+
+		const sections = data.document.data.sections;
+
+		sections.forEach((section, i) => {
+			if (section.type != 'question') return;
+
+			const question_section: IQCMQuestionSection = section as IQCMQuestionSection;
+
+			question_section.questions.forEach((question_case, j) => {
+				const parent = inputs[k].parentElement;
+				if (!parent) return;
+				parent.classList.remove(...['valid', 'missing', 'wrong'].map((v) => 'c-' + v));
+				const value = new_correction ? new_correction[i][j] : undefined;
+				if (value && parent) {
+					parent.classList.add('c-' + value, 'relative');
+
+					const div = document.createElement('div');
+					div.classList.add('absolute');
+					div.style.right = '-45pt';
+					div.style.top = '0pt';
+					div.textContent = value.toUpperCase().substring(0, 3);
+					parent.appendChild(div);
+				}
+				k = k + 1;
+			});
+		});
+	});
 
 	let disabled_submition = writable(
-		get(cached_documents)
+		get(cached_answers)
 			[data.access].data.sections.filter((v) => v.type === 'question')
 			.map((v) => v as IQCMQuestionSection)
 			.filter((v) => v.questions.filter((o) => o.answer).length == 0).length > 0
@@ -23,15 +67,35 @@
 
 		const obj = await fetch(origin + '/access/' + data.access + '/answer', {
 			method: 'POST',
-			body: JSON.stringify(get(cached_documents)[data.access]),
+			body: JSON.stringify(get(cached_answers)[data.access]),
 			headers: {
 				'content-type': 'application/json'
 			}
 		}).then((v) => v.json());
 
 		if (obj.error) {
+			console.error(
+				'Error occured with following objects : ' + JSON.stringify(get(cached_answers)[data.access])
+			);
 			$error = obj.message;
+			return;
 		}
+		const new_correction = await fetch(origin + '/access/' + data.access + '/correction', {
+			method: 'GET',
+			headers: {
+				'content-type': 'application/json'
+			}
+		}).then((v) => v.json());
+
+		if (new_correction.error) {
+			console.error(
+				'Error occured with following objects : ' + JSON.stringify(get(cached_answers)[data.access])
+			);
+			$error = obj.message;
+			return;
+		}
+
+		$correction = new_correction.data;
 	};
 
 	const onCheckboxChange = function (e: any) {
@@ -45,7 +109,7 @@
 			?.split('.')
 			.map((v) => Number(v)) as number[];
 
-		cached_documents.update((v) => {
+		cached_answers.update((v) => {
 			const object = v[data.access];
 
 			v[data.access] = {
@@ -75,7 +139,7 @@
 		});
 
 		$disabled_submition =
-			get(cached_documents)
+			get(cached_answers)
 				[data.access].data.sections.filter((v) => v.type === 'question')
 				.map((v) => v as IQCMQuestionSection)
 				.filter((v) => v.questions.filter((o) => o.answer).length == 0).length > 0;
@@ -133,3 +197,17 @@
 		>
 	</div>
 {/if}
+
+<style>
+	:global(.c-missing) {
+		background: rgb(82, 82, 0);
+	}
+
+	:global(.c-valid) {
+		background: rgb(var(--color-success-800));
+	}
+
+	:global(.c-wrong) {
+		background: rgb(117, 0, 0);
+	}
+</style>

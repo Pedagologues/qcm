@@ -4,6 +4,7 @@ import type { IDocument, IDocumentAccess } from '$lib/types';
 import { appendReadToWrite } from './database/access';
 import { parse_document } from '../parser';
 import { generateNewId } from './database/qcm';
+import { assert } from 'console';
 
 export function saveWithAccess(access_id: string, doc: IDocument & IDocumentMetadata) {
 	const access = loadAccess(access_id);
@@ -14,9 +15,7 @@ export function saveWithAccess(access_id: string, doc: IDocument & IDocumentMeta
 	saveDocument(doc);
 }
 
-export function loadWithAccess(
-	access_id: string
-): { document: IDocument; read: string[] } | undefined {
+export function loadWithAccess(access_id: string): { document: IDocument; read: string[] } {
 	const access = loadAccess(access_id);
 
 	if (!access) throw new Error('Could not recognize access');
@@ -54,6 +53,7 @@ export function loadWithAccess(
 				})
 			}
 		};
+		return { document, read: [] };
 	}
 	return { document, read: access.reads || [] };
 }
@@ -72,7 +72,10 @@ export function newReadAccess(access_id: string): IDocumentAccess {
 	return new_access;
 }
 
-export function submitAnswer(access_id: string, doc: IDocument & IAnswerMetadata) {
+export function submitAnswer(
+	access_id: string,
+	doc: IDocument & IAnswerMetadata
+): IDocument & IAnswerMetadata & IDocumentMetadata {
 	const access = loadAccess(access_id);
 
 	if (!access) throw new Error('Could not recognize access');
@@ -90,7 +93,10 @@ export function submitAnswer(access_id: string, doc: IDocument & IAnswerMetadata
 	doc.id = access.answer;
 	doc.submition_count = (prev_answer?.submition_count || 0) + 1;
 
-	const orig_doc = loadDocument(access.document_id);
+	const opt_orig_doc = loadDocument(access.document_id);
+	assert(opt_orig_doc != null);
+
+	const orig_doc = opt_orig_doc as IDocument & IDocumentMetadata;
 
 	if (orig_doc?.due_date && new Date().getTime() > orig_doc.due_date)
 		throw new Error('Submition is done after due date');
@@ -99,6 +105,12 @@ export function submitAnswer(access_id: string, doc: IDocument & IAnswerMetadata
 		throw new Error('Too many submitions');
 
 	saveAnswer(doc);
+	return {
+		...doc,
+		instant_correction: orig_doc.instant_correction,
+		due_date: orig_doc.due_date,
+		due_limit: orig_doc.due_limit
+	};
 }
 
 export function retrieveAnswer(access_write: string, access_id: string) {
@@ -110,5 +122,19 @@ export function retrieveAnswer(access_write: string, access_id: string) {
 	const r_access = loadAccess(access_id);
 	if (!r_access || !r_access.answer) return undefined;
 
-	return loadAnswer(r_access.answer);
+	const doc = loadAnswer(r_access.answer);
+	const opt_orig_doc = loadDocument(r_access.document_id);
+
+	assert(opt_orig_doc);
+
+	const orig_doc = opt_orig_doc as IDocument & IDocumentMetadata;
+
+	return {
+		...doc,
+		instant_correction: orig_doc.instant_correction,
+		due_date: orig_doc.due_date,
+		due_limit: orig_doc.due_limit
+	};
+
+	return;
 }
