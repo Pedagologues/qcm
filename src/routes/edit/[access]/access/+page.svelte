@@ -130,6 +130,8 @@
 	const getCsvExport = () => {
 		const header: string[] = [];
 		header.push('Alias');
+		header.push('Id');
+		header.push('Url');
 		header.push('Submitted');
 		data.document.data = parse_document(data.document.data.raw);
 
@@ -151,7 +153,12 @@
 
 		$reads.forEach((read) => {
 			const correction_read_data = $cached_corrections[read.access];
-			let row: string[] = [read.alias, correction_read_data != null ? 'X' : ''];
+			let row: string[] = [
+				read.alias,
+				read.access,
+				origin + '/view/' + read.access,
+				correction_read_data != null ? 'X' : ''
+			];
 			sections.forEach((section) => {
 				section.data.questions.forEach((v, j) => {
 					const question_data = correction_read_data
