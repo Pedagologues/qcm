@@ -8,6 +8,8 @@
 	import { FileButton } from '@skeletonlabs/skeleton';
 	import Papa from 'papaparse';
 	import CsvCellSelection from '../../../../lib/components/CsvCellSelection.svelte';
+	import type { IQCMQuestionSection } from '../../../../lib/types';
+	import { parse_document } from '../../../../lib/parser';
 
 	const origin = page.url.origin;
 
@@ -125,6 +127,56 @@
 		$refresher_i = $refresher_i + 1;
 	}, 1000);
 
+	const getCsvExport = () => {
+		const header: string[] = [];
+		header.push('Alias');
+		header.push('Submitted');
+		data.document.data = parse_document(data.document.data.raw);
+
+		const sections = data.document.data.sections
+			.map((v, i) => {
+				return { data: v, index: i };
+			})
+			.filter((v) => v.data.type == 'question')
+			.map((v) => {
+				return { data: v.data as IQCMQuestionSection, index: v.index };
+			});
+
+		sections.forEach((v) => {
+			v.data.questions.forEach((_v, j) => {
+				header.push(v.index + '.' + j);
+			});
+		});
+		const correction_data: string[][] = [header];
+
+		$reads.forEach((read) => {
+			const correction_read_data = $cached_corrections[read.access];
+			let row: string[] = [read.alias, correction_read_data != null ? 'X' : ''];
+			sections.forEach((section) => {
+				section.data.questions.forEach((v, j) => {
+					const question_data = correction_read_data
+						? correction_read_data[section.index]
+						: undefined;
+					const asnwer_data = question_data ? question_data[j] : v.answer ? 'missing' : undefined;
+
+					const map =
+						asnwer_data === 'missing'
+							? 'M'
+							: asnwer_data === 'wrong'
+								? 'W'
+								: asnwer_data === 'valid'
+									? 'V'
+									: undefined;
+
+					row.push(map || '');
+				});
+			});
+			correction_data.push(row);
+		});
+
+		return Papa.unparse(correction_data);
+	};
+
 	onMount(() => {
 		return () => clearInterval(getter);
 	});
@@ -155,8 +207,28 @@
 		>
 		<input class="hidden" id="csv-import" type="file" accept=".csv" bind:files={$files} />
 		<div class="flex-1"></div>
-		<button class="btn m-0 select-none border text-center text-lg shadow-lg hover:bg-surface-900"
-			>Export to CSV</button
+		<button
+			class="btn m-0 select-none border text-center text-lg shadow-lg hover:bg-surface-900"
+			onclick={() => {
+				let mime_type = 'text/plain';
+
+				var blob = new Blob([getCsvExport()], { type: mime_type });
+
+				let dlink = document.createElement('a');
+				document.body.appendChild(dlink);
+				dlink.download = 'results.csv';
+				dlink.href = window.URL.createObjectURL(blob);
+				dlink.onclick = function (e) {
+					// revokeObjectURL needs a delay to work properly
+					var that: any = this;
+					setTimeout(function () {
+						window.URL.revokeObjectURL(that.href);
+					}, 1500);
+				};
+
+				dlink.click();
+				dlink.remove();
+			}}>Export to CSV</button
 		>
 		<div class="flex-1"></div>
 	</div>
