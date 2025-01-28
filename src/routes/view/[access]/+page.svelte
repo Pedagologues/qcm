@@ -39,6 +39,7 @@
 				const parent = inputs[k].parentElement;
 				if (!parent) return;
 				parent.classList.remove(...['valid', 'missing', 'wrong'].map((v) => 'c-' + v));
+				inputs[k].disabled = false;
 				const value = new_correction ? new_correction[i][j] : undefined;
 				if (value && parent) {
 					parent.classList.add('c-' + value, 'relative');
@@ -49,6 +50,7 @@
 					div.style.top = '0pt';
 					div.textContent = value.toUpperCase().substring(0, 3);
 					parent.appendChild(div);
+					inputs[k].disabled = true;
 				}
 				k = k + 1;
 			});
