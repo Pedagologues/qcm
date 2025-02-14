@@ -149,9 +149,17 @@
 				header.push(v.index + '.' + j);
 			});
 		});
+
+		sections.forEach((v)=>{
+			header.push("Note "+v.index);
+		})
+
+		header.push("Note");
+
 		const correction_data: string[][] = [header];
 
 		$reads.forEach((read) => {
+			let question_notes:number[] = []
 			const correction_read_data = $cached_corrections[read.access];
 			let row: string[] = [
 				read.alias,
@@ -159,13 +167,15 @@
 				origin + '/view/' + read.access,
 				correction_read_data != null ? 'X' : ''
 			];
+			let note = 1;
 			sections.forEach((section) => {
 				section.data.questions.forEach((v, j) => {
 					const question_data = correction_read_data
 						? correction_read_data[section.index]
 						: undefined;
 					const asnwer_data = question_data ? question_data[j] : v.answer ? 'missing' : undefined;
-
+					if(asnwer_data != null && asnwer_data !== 'valid')
+						note = 0;
 					const map =
 						asnwer_data === 'missing'
 							? 'M'
@@ -177,9 +187,14 @@
 
 					row.push(map || '');
 				});
+				question_notes.push(note);
 			});
+			row.push(...question_notes.map(v=>v.toString()));
+			row.push(String((question_notes.reduce((a,b)=>a+b, 0) || 0)/question_notes.length))
 			correction_data.push(row);
 		});
+
+		
 
 		return Papa.unparse(correction_data);
 	};
