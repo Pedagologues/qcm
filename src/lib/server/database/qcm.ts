@@ -11,15 +11,13 @@ interface Data {
 }
 
 function emptyDocument(): IDocument & IDocumentMetadata {
+	const default_raw = `#?#\nWhat's the answer to the big question about life, the universe and everything else ?\n- [X] 42\n- [ ] 13\n- [ ] 7\n\n#?#\n\nWhere does the reference for the previous question come from ?\n- [X] H2G2\n- [X] The Hitchhiker's Guide to the Galaxy\n- [ ] Romeo and Juliet`
 	return {
 		id: '-1',
 		updated: new Date().getTime(),
 		created: new Date().getTime(),
-		data: {
-			raw: '',
-			sections: []
-		},
-		instant_correction: false,
+		data: parse_document(default_raw),
+		instant_correction: true,
 		title: ""
 	};
 }
