@@ -31,6 +31,7 @@ export function save(doc: IDocument & IAnswerMetadata) {
 	data[doc.id] = data[doc.id] || doc;
 	data[doc.id].updated = new Date().getTime();
 	data[doc.id].data = doc.data;
+	data[doc.id].title = doc.title;
 	saveFile();
 }
 

@@ -14,6 +14,7 @@
 	const { data }: PageProps = $props();
 	let value = writable(data.document.data.raw);
 	let meta = writable({ ...data.document } as IDocumentMetadata);
+	let title = writable(data.document.title);
 
 	let meta_date: Writable<Date | undefined> = writable(
 		($meta.due_date ? new Date($meta.due_date) : undefined) as Date | undefined
@@ -35,6 +36,17 @@
 			return new_v;
 		});
 	});
+
+	title.subscribe((newtitle)=>{
+		last_updated = new Date().getTime();
+		data.document.title = newtitle;
+
+		cached_documents.update((v) => {
+			let new_v = v || {};
+			new_v[data.access] = data.document;
+			return new_v;
+		});
+	})
 
 	value.subscribe((newv) => {
 		last_updated = new Date().getTime();
@@ -71,6 +83,11 @@
 </script>
 
 <div class="relative flex flex-1 flex-col">
+	<div class="flex flex-row text-center align-middle items-center mx-5 gap-5">
+		<strong>Title</strong>
+		<input class="input my-2 h-10 px-5 " bind:value={$title}/>
+	</div>
+
 	<div class="overflow-hidden">
 		<QcmEditor bind:value={$value} />
 	</div>

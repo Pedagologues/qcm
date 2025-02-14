@@ -172,7 +172,12 @@
 	});
 </script>
 
-<div class="relative flex flex-1 flex-col items-center py-5">
+<div class="relative flex flex-1 flex-col items-center py-5 gap-5">
+
+	<div class="bg-surface-700 px-10 py-4 shadow-lg rounded-lg">
+		{data.document.title}
+	</div>
+
 	<div class="w-2/3 rounded-lg bg-surface-800 p-10 shadow-lg">
 		<QcmRenderer value={data.document.data.raw} />
 

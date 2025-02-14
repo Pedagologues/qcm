@@ -4,6 +4,7 @@ export interface IDocument {
 	id: string;
 	created: number;
 	updated: number;
+	title: string;
 	data: IQCMDocument;
 }
 

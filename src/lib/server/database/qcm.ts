@@ -19,7 +19,8 @@ function emptyDocument(): IDocument & IDocumentMetadata {
 			raw: '',
 			sections: []
 		},
-		instant_correction: false
+		instant_correction: false,
+		title: ""
 	};
 }
 
@@ -47,6 +48,7 @@ export function save(doc: IDocument & IDocumentMetadata) {
 	data[doc.id].due_date = doc.due_date;
 	data[doc.id].due_limit = doc.due_limit;
 	data[doc.id].instant_correction = doc.instant_correction;
+	data[doc.id].title = doc.title;
 	saveFile();
 }
 
