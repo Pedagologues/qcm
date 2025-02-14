@@ -107,21 +107,22 @@
 		if ($reads.length == 0) return;
 
 		const read_access = $reads[$refresher_i].access;
+		if (read_access && read_access.length !== 0) {
+			const answer = await fetch(origin + '/access/' + read_access + '/correction', {
+				method: 'GET',
+				headers: {
+					'content-type': 'application/json'
+				}
+			}).then((v) => v.json());
 
-		const answer = await fetch(origin + '/access/' + read_access + '/correction', {
-			method: 'GET',
-			headers: {
-				'content-type': 'application/json'
+			if (!answer.error) {
+				cached_corrections.update((corrections) => {
+					let new_c = corrections || {};
+					new_c[read_access] = answer.data;
+
+					return new_c;
+				});
 			}
-		}).then((v) => v.json());
-
-		if (!answer.error) {
-			cached_corrections.update((corrections) => {
-				let new_c = corrections || {};
-				new_c[read_access] = answer.data;
-
-				return new_c;
-			});
 		}
 
 		$refresher_i = $refresher_i + 1;
@@ -150,16 +151,16 @@
 			});
 		});
 
-		sections.forEach((v)=>{
-			header.push("Note "+v.index);
-		})
+		sections.forEach((v) => {
+			header.push('Note ' + v.index);
+		});
 
-		header.push("Note");
+		header.push('Note');
 
 		const correction_data: string[][] = [header];
 
 		$reads.forEach((read) => {
-			let question_notes:number[] = []
+			let question_notes: number[] = [];
 			const correction_read_data = $cached_corrections[read.access];
 			let row: string[] = [
 				read.alias,
@@ -174,8 +175,7 @@
 						? correction_read_data[section.index]
 						: undefined;
 					const asnwer_data = question_data ? question_data[j] : v.answer ? 'missing' : undefined;
-					if(asnwer_data != null && asnwer_data !== 'valid')
-						note = 0;
+					if (asnwer_data != null && asnwer_data !== 'valid') note = 0;
 					const map =
 						asnwer_data === 'missing'
 							? 'M'
@@ -189,12 +189,10 @@
 				});
 				question_notes.push(note);
 			});
-			row.push(...question_notes.map(v=>v.toString()));
-			row.push(String((question_notes.reduce((a,b)=>a+b, 0) || 0)/question_notes.length))
+			row.push(...question_notes.map((v) => v.toString()));
+			row.push(String((question_notes.reduce((a, b) => a + b, 0) || 0) / question_notes.length));
 			correction_data.push(row);
 		});
-
-		
 
 		return Papa.unparse(correction_data);
 	};
@@ -224,13 +222,13 @@
 	<div class="flex flex-row justify-around">
 		<div class="flex-1"></div>
 		<label
-			class="btn m-0 cursor-pointer border text-center text-lg shadow-lg hover:bg-surface-900"
+			class="btn hover:bg-surface-900 m-0 cursor-pointer border text-center text-lg shadow-lg"
 			for="csv-import">Import from CSV</label
 		>
 		<input class="hidden" id="csv-import" type="file" accept=".csv" bind:files={$files} />
 		<div class="flex-1"></div>
 		<button
-			class="btn m-0 select-none border text-center text-lg shadow-lg hover:bg-surface-900"
+			class="btn hover:bg-surface-900 m-0 select-none border text-center text-lg shadow-lg"
 			onclick={() => {
 				let mime_type = 'text/plain';
 
@@ -352,7 +350,7 @@
 					<th scope="col" class="text-left shadow-lg">
 						<input class="input m-1 w-full p-2 px-5" oninput={onNewValue} />
 					</th>
-					<td class="m-0 select-none border p-0 text-center text-lg shadow-lg hover:bg-surface-900">
+					<td class="hover:bg-surface-900 m-0 select-none border p-0 text-center text-lg shadow-lg">
 						<button class="h-full w-full" onclick={onGenerate}> Generate </button>
 					</td>
 				</tr>
