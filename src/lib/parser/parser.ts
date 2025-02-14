@@ -1,6 +1,9 @@
 import type { IQCMDocument, IQCMQuestionSection, IQCMSection, IQCMTextSection } from './../types';
 
 export function parse_document(md: string): IQCMDocument {
+	if (!md.trim().startsWith("#?#")){
+		md = "#?#\n\n" + md;
+	}
 	const REGEX = /(^|\n)(#\?#)(\s*\((.*)\))?\s*/gm;
 
 	let raw_sections: string[] = [];
@@ -71,7 +74,7 @@ function parseQuestion(section: IQCMSection): IQCMQuestionSection {
 		.flat()
 		.map((v) => v.split('\n- [x]').map((v, i) => (i != 0 ? '- [X] ' + v : v)))
 		.flat();
-
+	
 	let header = sub_sections[0];
 	let questions = sub_sections
 		.filter((v, i) => i != 0)
