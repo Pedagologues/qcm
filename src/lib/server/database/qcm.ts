@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import type { IDocument, IDocumentMetadata } from '$lib/types';
 import assert from 'assert';
 import { randomUUID } from 'crypto';
+import { parse_document } from '$lib/parser';
 
 const NAME = 'data/qcm_data.json';
 
@@ -42,7 +43,7 @@ export function save(doc: IDocument & IDocumentMetadata) {
 	assert(data, 'Data should be loaded');
 	doc.updated = new Date().getTime();
 	data[doc.id].updated = new Date().getTime();
-	data[doc.id].data = doc.data;
+	data[doc.id].data = parse_document(doc.data.raw)
 	data[doc.id].due_date = doc.due_date;
 	data[doc.id].due_limit = doc.due_limit;
 	data[doc.id].instant_correction = doc.instant_correction;
