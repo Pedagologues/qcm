@@ -64,3 +64,17 @@ export function appendReadToWrite(write_access_id: string, id: string) {
 
 	return write_access;
 }
+
+export function appendAnswer(read_access_id: string, id: string) {
+	if (!data) loadFile();
+	assert(data, 'Data should be loaded');
+
+	const read_access = data[read_access_id];
+	assert(read_access, 'Write access is invalid');
+
+	read_access.answer = id;
+	saveFile();
+	data[read_access_id] = read_access;
+
+	return read_access;
+}

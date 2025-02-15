@@ -64,16 +64,20 @@
 			.filter((v) => v.questions.filter((o) => o.answer).length == 0).length > 0
 	);
 
-	const onSubmit = async function () {
-		if ($disabled_submition) return;
-
-		const obj = await fetch(origin + '/access/' + data.access + '/answer', {
+	const save = () : any => {
+		return fetch(origin + '/access/' + data.access + '/answer', {
 			method: 'POST',
 			body: JSON.stringify(get(cached_answers)[data.access]),
 			headers: {
 				'content-type': 'application/json'
 			}
 		}).then((v) => v.json());
+	}
+
+	const onSubmit = async function () {
+		if ($disabled_submition) return;
+
+		const obj = save();
 
 		if (obj.error) {
 			console.error(
@@ -139,6 +143,8 @@
 
 			return v;
 		});
+
+		save();
 
 		$disabled_submition =
 			get(cached_answers)

@@ -1,7 +1,7 @@
 import { loadAccess, loadAnswer, loadDocument, newAccess, saveAnswer, saveDocument } from '.';
 import type { IAnswerMetadata, IDocumentMetadata, IQCMQuestionSection } from '../types';
 import type { IDocument, IDocumentAccess } from '$lib/types';
-import { appendReadToWrite } from './database/access';
+import { appendAnswer, appendReadToWrite } from './database/access';
 import { parse_document } from '../parser';
 import { generateNewId } from './database/qcm';
 import { assert } from 'console';
@@ -25,35 +25,40 @@ export function loadWithAccess(access_id: string): { document: IDocument; read: 
 
 	// Remove answer if permission is read
 	if (access.permission === 'read') {
-		const remove_answers = (v: string): string =>
-			v.replaceAll('\n- [X]', '\n- [ ]').replaceAll('\n- [x]', '\n- [ ]');
+		if (!access.answer) {
+			const remove_answers = (v: string): string =>
+				v.replaceAll('\n- [X]', '\n- [ ]').replaceAll('\n- [x]', '\n- [ ]');
+			document.data = parse_document(document.data.raw);
+			document = {
+				...document,
+				data: {
+					...document.data,
+					raw: remove_answers(document.data.raw),
+					sections: document.data.sections.map((v) => {
+						if (v.type === 'question') {
+							const question_section = v as IQCMQuestionSection;
+							return {
+								...question_section,
+								raw: remove_answers(v.raw),
+								questions: question_section.questions.map((v) => {
+									return {
+										...v,
+										answer: false,
+										raw: v.raw.replaceAll('- [X]', '- [ ]').replaceAll('- [x]', '- [ ]')
+									};
+								})
+							};
+						}
+						return v;
+					})
+				}
+			};
+			return { document, read: [] };
+		}else{
+			const document = loadAnswer(access.answer as string) as  (IDocument & IAnswerMetadata);
 
-		document.data = parse_document(document.data.raw);
-		document = {
-			...document,
-			data: {
-				...document.data,
-				raw: remove_answers(document.data.raw),
-				sections: document.data.sections.map((v) => {
-					if (v.type === 'question') {
-						const question_section = v as IQCMQuestionSection;
-						return {
-							...question_section,
-							raw: remove_answers(v.raw),
-							questions: question_section.questions.map((v) => {
-								return {
-									...v,
-									answer: false,
-									raw: v.raw.replaceAll('- [X]', '- [ ]').replaceAll('- [x]', '- [ ]')
-								};
-							})
-						};
-					}
-					return v;
-				})
-			}
-		};
-		return { document, read: [] };
+			return { document, read: [] };
+		}
 	}
 	return { document, read: access.reads || [] };
 }
@@ -82,15 +87,15 @@ export function submitAnswer(
 	if (access.permission != 'read') throw new Error('Does not have permission to send submition');
 
 	if (!access.answer) {
-		access.answer = generateNewId();
+		appendAnswer(access.id, generateNewId())
 		doc.created = new Date().getTime();
 		doc.updated = new Date().getTime();
 		doc.submition_count = 0;
 	}
 
-	const prev_answer = loadAnswer(access.answer);
+	const prev_answer = loadAnswer(access.answer as string);
 
-	doc.id = access.answer;
+	doc.id = access.answer as string;
 	doc.submition_count = (prev_answer?.submition_count || 0) + 1;
 
 	const opt_orig_doc = loadDocument(access.document_id);
