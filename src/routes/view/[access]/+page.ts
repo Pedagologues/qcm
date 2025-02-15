@@ -11,15 +11,20 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
 	let data = get(cached_answers)[access];
 
-	if (!data) {
-		data = (
-			await fetch('/access/' + access, {
-				method: 'GET',
-				headers: {
-					'content-type': 'application/json'
-				}
-			}).then((v) => v.json())
-		)?.data;
+	let fetched = (
+		await fetch('/access/' + access, {
+			method: 'GET',
+			headers: {
+				'content-type': 'application/json'
+			}
+		}).then((v) => v.json())
+	)
+	if (!data || data.updated !== fetched.data.updated) {
+		if(!data) data = fetched?.data;
+		else {
+			//TO IMPROVE
+			data = fetched?.data;
+		}
 	}
 
 	if (data) {
