@@ -104,6 +104,27 @@
 		$correction = new_correction.data;
 	};
 
+	const onReset = async function () {
+		cached_answers.update(v=>{
+			const doc = v[data.access];
+			
+			doc.data.sections = doc.data.sections.map(v=>{
+				if(v.type !== "question") return v;
+				const q_v = v as IQCMQuestionSection;
+				q_v.questions = q_v.questions.map(v2 => {
+					v2.answer = false;
+					return v2;
+				})
+				return v;
+			})
+
+			v[data.access];
+			return v;
+		})
+		save();
+		refreshState();
+	}
+
 	const onCheckboxChange = function (e: any) {
 		const input_el = e.target as Element;
 
@@ -153,28 +174,32 @@
 				.filter((v) => v.questions.filter((o) => o.answer).length == 0).length > 0;
 	};
 
-	onMount(() => {
+	const refreshState = function () {
 		let inputs = Array(...document.getElementsByTagName('input'));
 
-		let k = 0;
+let k = 0;
 
-		const sections = data.document.data.sections;
+const sections = data.document.data.sections;
 
-		sections.forEach((section, i) => {
-			if (section.type != 'question') return;
+sections.forEach((section, i) => {
+	if (section.type != 'question') return;
 
-			const question_section: IQCMQuestionSection = section as IQCMQuestionSection;
+	const question_section: IQCMQuestionSection = section as IQCMQuestionSection;
 
-			question_section.questions.forEach((question_case, j) => {
-				inputs[k].setAttribute('data-id', i + '.' + j);
-				inputs[k].checked = question_case.answer;
-				k = k + 1;
-			});
-		});
+	question_section.questions.forEach((question_case, j) => {
+		inputs[k].setAttribute('data-id', i + '.' + j);
+		inputs[k].checked = question_case.answer;
+		k = k + 1;
+	});
+});
 
-		inputs.forEach((v) => {
-			v.addEventListener('change', onCheckboxChange);
-		});
+inputs.forEach((v) => {
+	v.addEventListener('change', onCheckboxChange);
+});
+	}
+
+	onMount(() => {
+		refreshState();
 	});
 </script>
 
@@ -187,7 +212,12 @@
 	<div class="w-2/3 rounded-lg bg-surface-800 p-10 shadow-lg">
 		<QcmRenderer value={data.document.data.raw} />
 
-		<div class="flex justify-end">
+		<div class="flex justify-center">
+			<button
+				class="btn btn-md rounded-sm bg-surface-500 shadow-lg"
+				onclick={onReset}>Reset</button
+			>
+			<div class="flex-1"></div>
 			<button
 				class="btn btn-md rounded-sm bg-surface-500 shadow-lg"
 				disabled={$disabled_submition}
